@@ -1,1 +1,36 @@
+/* src/index.css */
 @import "tailwindcss";
+
+/* v4부터는 여기서 직접 커스텀 테마를 설정합니다 */
+@theme {
+  --color-sunset-50: #FFF8DE;
+  --color-sunset-100: #FFECB3;
+  --color-sunset-200: #FFC100;
+  --color-sunset-300: #FF8A08;
+  --color-sunset-400: #FF6500;
+  --color-sunset-500: #C40C0C;
+  --color-sunset-600: #920909;
+  --color-sunset-700: #680414;
+  --color-sunset-800: #3E001F;
+   
+  --color-crimson-50: #FFF1F2;
+  --color-crimson-100: #FFE4E6;
+  --color-crimson-200: #FECDD3;
+  --color-crimson-300: #FDA4AF;
+  --color-crimson-400: #FB7185; 
+  --color-crimson-500: #F43F5E; 
+  --color-crimson-600: #E11D48;
+  --color-crimson-700: #BE123C;
+  --color-crimson-800: #9F1239;
+
+   --color-jade-50: #ECFDF5;    /*메인 컬러*/
+  --color-jade-100: #D1FAE5;
+  --color-jade-200: #A7F3D0;
+  --color-jade-300: #6EE7B7;
+  --color-jade-400: #34D399; 
+  --color-jade-500: #10B981;
+  --color-jade-600: #059669;
+  --color-jade-700: #047857;
+  --color-jade-800: #065F46;
+
+}
