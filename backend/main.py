@@ -1,20 +1,39 @@
+import os
+import io
+import jieba
+import hanja  
+import easyocr
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-import easyocr
 from pypinyin import pinyin, Style
-from deep_translator import GoogleTranslator 
-import io
+from deep_translator import GoogleTranslator
 
 app = FastAPI()
 
-# 1. EasyOCR 로드 (서버 켤 때 한 번만)
-# gpu=False는 일반 PC 환경에서 가장 안전합니다.
+# 1. 모델 로드
 reader = easyocr.Reader(['ch_sim', 'en'], gpu=False)
 
-# 2. 번역기 로드 (중국어 -> 한국어)
-translator = GoogleTranslator(source='zh-CN', target='ko')
+# 2. 번역 함수 정의
+def get_translations(text):
+    try:
+        translator = GoogleTranslator(source='zh-CN', target='ko')
+        # 구어체: 전체 문장 번역
+        colloquial = translator.translate(text)
+        
+        # 문어체: 단어별 쪼개서 번역
+        words = jieba.lcut(text)
+        literal_words = []
+        for word in words:
+            if word.strip():
+                literal_words.append(translator.translate(word))
+        literary = " ".join(literal_words)
+        
+        return literary, colloquial
+    except Exception as e:
+        print(f"번역 중 에러: {e}")
+        return text, text # 에러 시 원문이라도 반환
 
-# CORS 설정 (프론트엔드 연결 허용)
+# CORS 설정
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -23,40 +42,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
-def read_root():
-    return {"message": "EasyOCR 엔진이 준비되었습니다!"}
-
 @app.post("/analyze")
 async def analyze_image(file: UploadFile = File(...)):
     try:
-        # 3. 이미지 읽기
         image_bytes = await file.read()
         
-        # 4. OCR 실행
-        # detail=0: 텍스트만 추출
-        # paragraph=True: 흩어진 글자들을 문맥에 맞게 합쳐줌 (손글씨에 도움됨)
+        # 3. OCR 실행
         result = reader.readtext(image_bytes, detail=0, paragraph=True)
-        
         full_text = " ".join(result).strip()
 
         if not full_text:
             return {"status": "error", "message": "글자를 인식하지 못했습니다."}
+        
+        # 한국식 한자 읽기 변환 (예: 滨江道 -> 빈장도)
+        hanja_read = hanja.translate(full_text, 'substitution')
 
-        # 5. 병음(성조) 변환
+        # 4. 중요: 함수 안에서 번역 호출 (full_text 정의 후 호출)
+        literary_result, colloquial_result = get_translations(full_text)
+
+        # 5. 병음 변환
         pinyin_list = pinyin(full_text, style=Style.TONE)
         pinyin_str = " ".join([item[0] for item in pinyin_list])
 
-        # 6. 한국어 번역
-        translated_text = translator.translate(full_text)
-
+        # 6. 최종 결과 반환 (Key 이름을 리액트와 맞춤)
         return {
             "status": "success",
             "original": full_text,
             "pinyin": pinyin_str,
-            "meaning": translated_text
+            "hanja_read": hanja_read,
+            "literary": literary_result,   # 리액트가 보는 이름
+            "colloquial": colloquial_result # 리액트가 보는 이름
         }
 
     except Exception as e:
-        print(f"서버 에러: {e}")
+        print(f"서버 내부 에러: {e}")
         return {"status": "error", "message": str(e)}
