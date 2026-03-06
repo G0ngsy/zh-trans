@@ -7,7 +7,7 @@ import HeroText from './components/HeroText';
 import ActionButtons from './components/ActionButtons';
 import CameraCapture from './components/CameraCapture';
 import ResultCard from './components/ResultCard';
-import ImageUploader from './components/imageUploader';
+import ImageUploader from './components/ImageUploader';
 
 // 화면 상태 정의
 type ViewState = 'HOME' | 'CAMERA' | 'UPLOAD' | 'LOADING' | 'RESULT';
@@ -16,6 +16,9 @@ interface AnalysisResult {
   original: string;
   pinyin: string;
   meaning: string;
+  literary: string;
+  colloquial: string; 
+  hanja_read: string;
 }
 
 function App() {
@@ -70,12 +73,10 @@ function App() {
   };
 
   // 5. [카메라 모드] 촬영 완료 시 실행 (촬영 -> 저장 -> 바로 분석)
-  const handleCameraCapture = (file: File) => {
+  const handleCameraCapture = (file: File, croppedUrl: string) => {
     setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
-    
-    // 촬영된 파일을 가지고 즉시 분석 시작
-    analyzeImage(file);
+    setPreviewUrl(croppedUrl); // 전체 화면이 아닌 잘린 이미지가 결과창에 보임
+    analyzeImage(file); // 바로 분석 시작
   };
 
 
