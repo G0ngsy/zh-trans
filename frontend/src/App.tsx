@@ -16,7 +16,7 @@ interface AnalysisResult {
   original: string;
   pinyin: string;
   meaning: string;
-  literary: string;
+  literary: { word: string; meaning: string }[];
   colloquial: string; 
   hanja_read: string;
 }
