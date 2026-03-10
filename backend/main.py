@@ -1,17 +1,31 @@
 import os
+import sys
+
+# 윈도우 환경 안정성 설정
+os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
+
 import requests
 import json
-import easyocr
 import hanja
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pypinyin import pinyin, Style
-from deep_translator import GoogleTranslator # 구글 번역 라이브러리
+from deep_translator import GoogleTranslator
+
+# PaddleOCR 임포트 전에 이 아래 세 줄을 추가하면 경로 문제를 방지할 수 있습니다.
+import paddleocr
+from paddleocr import PaddleOCR
+
+import cv2
+import numpy as np
+
+
 
 app = FastAPI()
 
 # 1. 모델 및 번역기 초기화
-reader = easyocr.Reader(['ch_sim', 'en'], gpu=False)
+#reader = easyocr.Reader(['ch_sim', 'en'], gpu=False)
+ocr_engine = PaddleOCR(use_angle_cls=True, lang='ch', use_gpu=False, show_log=False)
 google_translator = GoogleTranslator(source='zh-CN', target='ko')
 
 # 2. 로컬 Ollama 설정 (EXAONE 3.5 사용)
@@ -78,14 +92,36 @@ def read_root():
 @app.post("/analyze")
 async def analyze_image(file: UploadFile = File(...)):
     try:
-        # A. 이미지에서 텍스트 추출 (OCR)
+        # 이미지 읽기
         image_bytes = await file.read()
-        result = reader.readtext(image_bytes, detail=0, paragraph=True)
-        full_text = " ".join(result).strip()
+        
+        # --- [Step 1: PaddleOCR로 텍스트 추출] ---
+        # 바이너리 데이터를 OpenCV 이미지로 변환
+        nparr = np.frombuffer(image_bytes, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        # OCR 실행
+        # 2. OCR 실행 (안정 버전에서는 cls 인자 없이 실행 가능)
+        result = ocr_engine.ocr(img, cls=True)
+
+        # PaddleOCR의 결과는 [[좌표, (텍스트, 신뢰도)], ...] 형태.
+        # 여기서 텍스트만 뽑아 한 문장으로 
+        full_text = ""
+        # PaddleOCR 결과 파싱: result[0] 안에 [[좌표, (텍스트, 확률)], ...]이 들어있음
+        if result and result[0]:
+            for line in result[0]:
+                text = line[1][0] # 텍스트만 추출
+                full_text += text + " "
+        
+          # 마지막 공백 제거 및 정리
+        full_text = full_text.strip()
+
 
         if not full_text:
             return {"status": "error", "message": "글자를 인식하지 못했습니다."}
-
+        
+        
+        # --- [Step 2: 기존 분석 로직 그대로 진행] ---
         # B. 한국식 한자 독음 (hanja)
         hanja_read = hanja.translate(full_text, 'substitution')
 
