@@ -54,7 +54,9 @@ function App() {
     formData.append('file', file);
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/analyze', formData, {
+     // (환경 변수를 사용하도록 변경)
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await axios.post(`${apiUrl}/analyze`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       
