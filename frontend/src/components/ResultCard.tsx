@@ -76,7 +76,8 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
 
             {/* 단어 카드 그리드 (글자가 길어질 것을 대비해 grid-cols-2 기본 적용) */}
             <div className="grid grid-cols-2 gap-3">
-              {result.literary.map((item, i) => (
+               {/* result.literary 뒤에 ?를 붙여서 데이터가 없을 때 에러 방지 */}
+              {result.literary?.map((item, i) => (
                 <div 
                   key={i} 
                   className="bg-gray-50/50 border border-gray-100 rounded-2xl p-3.5 transition-all hover:border-jade-300 hover:bg-white hover:shadow-md group"
