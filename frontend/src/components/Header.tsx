@@ -4,8 +4,8 @@ interface HeaderProps {
 
 export default function Header({ onLogoClick }: HeaderProps) {
   return (
-    <header className="w-full flex items-center p-4 border-b border-jade-100 bg-white">
-      <div className="max-w-4xl w-full mx-auto">
+    <header className="sticky top-0 z-50 w-full flex items-center p-4 border-b border-jade-100 bg-white/80 backdrop-blur-md">
+      <div className="max-w-4xl w-full mx-auto flex items-center gap-3">
         {/* 로고와 텍스트 전체를 감싸서 클릭 범위를 넓힙니다 */}
         <div 
           onClick={onLogoClick}
