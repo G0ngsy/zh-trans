@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'; // 1. useEffect 추가
 import axios from 'axios';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-
+import { AnimatePresence } from 'framer-motion'; 
 
 import Header from './components/Header';
 import HeroText from './components/HeroText';
@@ -10,9 +10,9 @@ import CameraCapture from './components/CameraCapture';
 import ResultCard from './components/ResultCard';
 import ImageUploader from './components/ImageUploader';
 import SplashScreen from './components/SplashScreen';
-
+import VocabPage from './components/VocabPage';
 // 화면 상태 정의
-type ViewState = 'HOME' | 'CAMERA' | 'UPLOAD' | 'LOADING' | 'RESULT';
+type ViewState = 'HOME' | 'CAMERA' | 'UPLOAD' | 'LOADING' | 'RESULT' | 'VOCAB';
 
 interface AnalysisResult {
   original: string;
@@ -96,12 +96,15 @@ function App() {
   return (
     <div className="min-h-screen bg-jade-50">
       {/* 시작 화면이 true일 때만 보여줌 */}
-      {showSplash ? (
-        <SplashScreen />
-      ) : (
+      <AnimatePresence>
+        {showSplash && <SplashScreen key="splash" />}
+      </AnimatePresence>
+
+      {!showSplash && (
         <div className="animate-fade-in">
           {/* 헤더에 goHome 함수 연결 */}
-          <Header onLogoClick={() => setView('HOME')} /> 
+          <Header onLogoClick={goHome}
+                  onVocabClick={() => setView('VOCAB')} /> 
 
           <main className="flex-1 pb-20">
             {/* === CASE 1: 홈 화면 === */}
@@ -113,9 +116,13 @@ function App() {
                     onCameraClick={() => setView('CAMERA')}
                     onUploadClick={() => setView('UPLOAD')}
                   />
+                 
                 </div>
               </div>
             )}
+
+            {/* === 단어장 페이지 === */}
+            {view === 'VOCAB' && <VocabPage onBack={goHome} />}
 
             {/* 뒤로가기 버튼 (UPLOAD 모드에서만 표시) */}
             {view === 'UPLOAD' && (
@@ -148,7 +155,7 @@ function App() {
                     disabled={!selectedFile}
                     className={`w-full py-4 rounded-2xl font-bold text-white shadow-md transition-all ${
                       selectedFile 
-                        ? 'bg-[#1C1C1C] hover:bg-black' 
+                        ? 'bg-jade-600 hover:bg-jade-700' 
                         : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     }`}
                   >
@@ -172,6 +179,7 @@ function App() {
                   imageUrl={previewUrl}
                   result={result}
                   onRetry={goHome}
+                  
                 />
               </div>
             )}

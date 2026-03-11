@@ -9,11 +9,34 @@ interface ResultCardProps {
     literary: { word: string; meaning: string }[]; // 단어장 데이터
     colloquial: string;  // 구어체 번역
     hanja_read: string;  // 한국식 한자 독음
+    
   };
   onRetry: () => void;
 }
 
+// 단어장 아이템 타입 정의
+interface VocabItem {
+  word: string;
+  meaning: string;
+}
+
 export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProps) {
+
+  // 단어 저장 함수
+  const saveToVocab = (word: string, meaning: string) => {
+    // 저장된 데이터를 VocabItem 배열로 명확하게 가져옴
+    const saved: VocabItem[] = JSON.parse(localStorage.getItem('myVocab') || '[]');
+    
+    // 중복 저장 방지
+    if (!saved.find((item) => item.word === word)) {
+      const newVocab = [...saved, { word, meaning }];
+      localStorage.setItem('myVocab', JSON.stringify(newVocab));
+      alert('단어장에 저장되었습니다!');
+    } else {
+      alert('이미 저장된 단어입니다.');
+    }
+  };
+
   return (
     <div className="flex flex-col h-full animate-fade-in pb-10">
       
@@ -69,8 +92,8 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
                 <Book size={20} />
               </div>
               <div>
-                <span className="text-[11px] font-black text-jade-600 uppercase tracking-widest opacity-70 leading-none">Vocabulary</span>
-                <h4 className="text-sm font-bold text-gray-700">핵심 단어장</h4>
+                <span className="text-[11px] font-black text-jade-600 uppercase tracking-widest opacity-70 leading-none">WORD LIST</span>
+                <h4 className="text-sm font-bold text-gray-700">단어 뜻 풀이</h4>
               </div>
             </div>
 
@@ -80,6 +103,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
               {result.literary?.map((item, i) => (
                 <div 
                   key={i} 
+                  onContextMenu={(e) => { e.preventDefault(); saveToVocab(item.word, item.meaning); }} // 마우스 우클릭 혹은 꾹 누르기
                   className="bg-gray-50/50 border border-gray-100 rounded-2xl p-3.5 transition-all hover:border-jade-300 hover:bg-white hover:shadow-md group"
                 >
                   <p className="text-jade-600 font-black text-lg mb-0.5 group-hover:scale-105 transition-transform origin-left">
@@ -88,6 +112,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
                   <p className="text-gray-400 text-xs font-bold truncate">
                     {item.meaning}
                   </p>
+                  
                 </div>
               ))}
             </div>
@@ -97,11 +122,12 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
 
           {/* 3. 구어체 (Colloquial) */}
           <div className="flex gap-4 pb-4">
-            <div className="shrink-0 w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border border-gray-200">
+            <div className="shrink-0 w-10 h-10 bg-jade-50 rounded-xl flex items-center justify-center text-jade-500 border border-jade-100">
               <MessageCircle size={20} />
             </div>
             <div className="space-y-1">
-              <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest opacity-70">Colloquial</span>
+              <span className="text-[11px] font-black text-jade-600 uppercase tracking-widest opacity-70">FULL TEXT</span>
+              <h4 className="text-sm font-bold text-gray-700">전체 문장 해석</h4>
               <p className="text-xl font-bold text-gray-700 italic leading-snug break-keep">
                 "{result.colloquial}"
               </p>
@@ -119,7 +145,8 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
         <div className="space-y-1">
           <p className="text-sm text-orange-800 font-bold leading-none">한어 렌즈 가이드</p>
           <p className="text-[11px] text-orange-700/80 leading-relaxed font-medium">
-            단어 본연의 뜻은 <b>단어장</b>을, 실제 현지 문맥은 <b>구어체</b>를 참고하세요!
+            개별 단어의 뜻이 궁금할 땐 <b>단어 뜻 풀이</b>를,<br/>
+      문장의 전체적인 흐름은 <b>전체 문장 해석</b>을 참고하세요!
           </p>
         </div>
       </div>
@@ -127,7 +154,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
       {/* 5. 하단 버튼 */}
       <button 
         onClick={onRetry}
-        className="w-full py-5 bg-[#1C1C1C] hover:bg-black text-white rounded-2xl font-bold shadow-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+        className="w-full py-5 bg-jade-500 hover:bg-jade-600 text-white rounded-2xl font-bold shadow-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
       >
         <RefreshCcw size={18} />
         <span>다른 이미지 분석하기</span>
