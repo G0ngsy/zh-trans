@@ -53,11 +53,15 @@ function App() {
     const formData = new FormData();
     formData.append('file', file);
 
+    // 환경 변수에서 주소 가져오기
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
     try {
-     
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       const response = await axios.post(`${apiUrl}/analyze`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'ngrok-skip-browser-warning': '69420' // ✨ [매우 중요] Ngrok 경고창 무시 코드 추가!
+        },
       });
       
       setResult(response.data); 
