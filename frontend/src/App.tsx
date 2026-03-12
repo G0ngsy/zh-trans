@@ -15,12 +15,21 @@ import VocabPage from './components/VocabPage';
 // 화면 상태 정의
 type ViewState = 'HOME' | 'CAMERA' | 'UPLOAD' | 'LOADING' | 'RESULT' | 'VOCAB';
 
+
+// 1. 단어장 아이템 타입 정의 (이제 모든 파일에서 통일된 형식을 씀)
+export interface VocabItem {
+  word: string;
+  meaning: string;
+  pinyin: string; // ✨ pinyin 포함
+}
+
+// 2. 전체 분석 결과 타입 정의
 interface AnalysisResult {
   original: string;
   pinyin: string;
-  literary: { word: string; meaning: string }[];
-  colloquial: string; 
   hanja_read: string;
+  literary: VocabItem[]; // ✨ 위에서 정의한 VocabItem 배열로 연결
+  colloquial: string; 
 }
 
 function App() {

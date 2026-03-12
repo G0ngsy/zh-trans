@@ -1,3 +1,4 @@
+import re
 import os
 import sys
 
@@ -57,7 +58,7 @@ def get_smart_word_list(text):
 반드시 아래 JSON 형식으로만 답변해 (JSON 외의 텍스트는 금지):
 {{
   "word_list": [
-    {{"word": "단어", "meaning": "뜻"}}
+    {{"word": "단어", "meaning": "뜻","pinyin": "병음"}}
   ]
 }}"""
 
@@ -71,10 +72,17 @@ def get_smart_word_list(text):
         }, timeout=15)
         
         ai_data = json.loads(response.json()['response'])
-        return ai_data.get('word_list', [])
-    except Exception as e:
-        print(f"AI 분석 실패: {e}")
-        return [] # 실패 시 빈 리스트 반환 (프론트에서 처리)
+        # 2. [필터링 핵심 코드] 한자가 하나라도 포함된 단어만 남기기
+        filtered_list = []
+        for item in ai_data.get('word_list', []):
+            word = item.get('word', '')
+            # 정규식: \u4e00-\u9fff 는 모든 한자 범위를 뜻합니다.
+            if re.search(r'[\u4e00-\u9fff]', word):
+                filtered_list.append(item)
+        
+        return filtered_list
+    except:
+        return []
 
 # 3. CORS 설정
 app.add_middleware(

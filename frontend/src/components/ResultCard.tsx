@@ -6,7 +6,7 @@ interface ResultCardProps {
   result: {
     original: string;    // 중국어 원문
     pinyin: string;      // 성조 포함 병음
-    literary: { word: string; meaning: string }[]; // 단어장 데이터
+    literary: VocabItem[]; // 단어장 데이터
     colloquial: string;  // 구어체 번역
     hanja_read: string;  // 한국식 한자 독음
     
@@ -18,6 +18,7 @@ interface ResultCardProps {
 interface VocabItem {
   word: string;
   meaning: string;
+  pinyin: string;
 }
 
 export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProps) {
@@ -63,7 +64,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
           <h1 className="text-3xl font-black text-gray-900 mb-3 tracking-tight leading-tight break-all">
             {result.original}
           </h1>
-          <p className="text-orange-500 font-bold text-lg font-mono">
+          <p className="text-sunset-400 font-bold text-lg font-mono">
             {result.pinyin}
           </p>
         </div>
@@ -100,19 +101,30 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
             {/* 단어 카드 그리드 (글자가 길어질 것을 대비해 grid-cols-2 기본 적용) */}
             <div className="grid grid-cols-2 gap-3">
                {/* result.literary 뒤에 ?를 붙여서 데이터가 없을 때 에러 방지 */}
-              {result.literary?.map((item, i) => (
+              {result.literary
+                // 1단계 필터: 한자가 하나라도 포함된 단어만 통과
+                ?.filter(item => /[\u4e00-\u9fff]/.test(item.word)) 
+                // 2단계 렌더링
+                .map((item, i) => (
                 <div 
                   key={i} 
                   onContextMenu={(e) => { e.preventDefault(); saveToVocab(item.word, item.meaning); }} // 마우스 우클릭 혹은 꾹 누르기
                   className="bg-gray-50/50 border border-gray-100 rounded-2xl p-3.5 transition-all hover:border-jade-300 hover:bg-white hover:shadow-md group"
                 >
-                  <p className="text-jade-600 font-black text-lg mb-0.5 group-hover:scale-105 transition-transform origin-left">
+                  {/* 1. 한자 */}
+                  <p className="text-jade-600 font-black text-xl mb-0.5 group-hover:scale-105 transition-transform origin-left">
                     {item.word}
                   </p>
-                  <p className="text-gray-400 text-xs font-bold truncate">
+                  
+                  {/* 2. 병음 (성조 포함) */}
+                  <p className="text-sunset-400 font-bold text-xs font-mono mb-2">
+                    {item.pinyin}
+                  </p>
+
+                  {/* 3. 뜻 */}
+                  <p className="text-gray-600 text-xs font-bold truncate border-t border-gray-50 pt-2">
                     {item.meaning}
                   </p>
-                  
                 </div>
               ))}
             </div>
