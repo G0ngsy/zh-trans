@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'; // 1. useEffect 추가
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion'; 
@@ -75,30 +76,40 @@ function App() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
-  // 2. [공통] 이미지를 받아서 분석을 요청하는 핵심 함수
+
+
+  // 2. [핵심] 이중 서버 연결 함수 (메인 PC 서버 -> 실패 시 허깅페이스 비상 서버)
   const analyzeImage = async (file: File) => {
     setView('LOADING'); 
 
     const formData = new FormData();
     formData.append('file', file);
 
-    // 환경 변수에서 주소 가져오기
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    // 환경 변수(메인)와 비상용 허깅페이스 주소
+    const mainApi = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const fallbackApi = "https://suny0731-hanyu-lens-fallback.hf.space"; 
 
     try {
-      const response = await axios.post(`${apiUrl}/analyze`, formData, {
-        headers: { 
-          'Content-Type': 'multipart/form-data',
-          'ngrok-skip-browser-warning': '69420' // ✨ [매우 중요] Ngrok 경고창 무시 코드 추가!
-        },
+      // 1순위: 내 PC 서버 시도
+      const response = await axios.post(`${mainApi}/analyze`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data', 'ngrok-skip-browser-warning': '69420' },
+        timeout: 5000 // 5초 대기
       });
-      
       setResult(response.data); 
-      navigateTo('RESULT'); // 기록을 남기며 이동       
-    } catch (error) {
-      console.error(error);
-      alert("분석 실패! 백엔드 서버가 켜져 있는지 확인해주세요.");
-      setView('HOME');
+      navigateTo('RESULT');
+    } catch (_error) {
+      console.warn("메인 서버 실패, 비상 서버로 전환합니다.");
+      try {
+        // 2순위: 내 PC 서버 실패 시 허깅페이스로 시도
+        const fallbackResponse = await axios.post(`${fallbackApi}/analyze`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setResult(fallbackResponse.data); 
+        navigateTo('RESULT');
+      } catch (_fallbackError) {
+        alert("분석 실패! 서버 연결을 확인해주세요.");
+        setView('HOME');
+      }
     }
   };
 
