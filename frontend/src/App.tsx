@@ -38,14 +38,43 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  // 1. 홈으로 돌아가기 (초기화)
-  const goHome = () => {
-    setView('HOME');
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    setResult(null);
+  // 1. 화면 이동을 담당하는 통합 함수 (기록을 쌓으면서 이동)
+  const navigateTo = (nextView: ViewState) => {
+    // 현재 화면을 브라우저 기록에 저장
+    window.history.pushState({ view: nextView }, '', '');
+    setView(nextView);
   };
 
+  // 2. 홈으로 돌아가기 (기록 초기화하며 이동)
+  const goHome = () => {
+    window.history.pushState({ view: 'HOME' }, '', ''); // 홈 기록 추가
+    setView('HOME');
+    setSelectedFile(null);
+    setResult(null);
+    setPreviewUrl(null);
+    // 홈으로 올 때는 기록을 새로 깨끗하게 정리할 수도 있습니다.
+  };
+
+  // 3. 브라우저/폰의 뒤로가기 신호 감지 로직
+  useEffect(() => {
+    // 앱이 처음 켜질 때 현재 상태(HOME)를 기록에 한 번 박아줍니다.
+    if (window.history.state === null) {
+      window.history.replaceState({ view: 'HOME' }, '', '');
+    }
+
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state && event.state.view) {
+        // 폰의 뒤로가기를 누르면 브라우저 기록에 저장된 '이전 view'를 읽어서 보여줍니다.
+        setView(event.state.view);
+      } else {
+        // 기록이 없으면 안전하게 홈으로 보냅니다.
+        setView('HOME');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
   // 2. [공통] 이미지를 받아서 분석을 요청하는 핵심 함수
   const analyzeImage = async (file: File) => {
     setView('LOADING'); 
@@ -65,7 +94,7 @@ function App() {
       });
       
       setResult(response.data); 
-      setView('RESULT');        
+      navigateTo('RESULT'); // 기록을 남기며 이동       
     } catch (error) {
       console.error(error);
       alert("분석 실패! 백엔드 서버가 켜져 있는지 확인해주세요.");
@@ -104,7 +133,7 @@ function App() {
         <div className="animate-fade-in">
           {/* 헤더에 goHome 함수 연결 */}
           <Header onLogoClick={goHome}
-                  onVocabClick={() => setView('VOCAB')} /> 
+                  onVocabClick={() => navigateTo('VOCAB')} /> 
 
           <main className="flex-1 pb-20">
             {/* === CASE 1: 홈 화면 === */}
@@ -113,16 +142,16 @@ function App() {
                 <HeroText />
                 <div className="mt-8">
                   <ActionButtons 
-                    onCameraClick={() => setView('CAMERA')}
-                    onUploadClick={() => setView('UPLOAD')}
+                    onCameraClick={() => navigateTo('CAMERA')}
+                    onUploadClick={() => navigateTo('UPLOAD')}
                   />
                  
                 </div>
               </div>
             )}
 
-            {/* === 단어장 페이지 === */}
-            {view === 'VOCAB' && <VocabPage onBack={goHome} />}
+            {/* 단어장: 뒤로가기는 폰 버튼이 대신하므로 onBack은 goHome 혹은 간단히 처리 */}
+            {view === 'VOCAB' && <VocabPage onBack={() => window.history.back()} />}
 
             {/* 뒤로가기 버튼 (UPLOAD 모드에서만 표시) */}
             {view === 'UPLOAD' && (
@@ -173,6 +202,7 @@ function App() {
               </div>
             )}
 
+            {/* 결과창: 여기서 단어장 갔다가 뒤로오면 다시 여기가 보임! */}
             {view === 'RESULT' && result && (
               <div className="max-w-md mx-auto px-4 animate-fade-in pt-4">
                 <ResultCard 
