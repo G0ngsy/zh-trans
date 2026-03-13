@@ -43,7 +43,6 @@ async def analyze_realtime(file: UploadFile = File(...)):
             for line in result[0]:
                 box = line[0]  # 좌표 [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
                 text = line[1][0]
-                
                 # 병음 추출
                 pinyin_str = "".join([item[0] for item in pinyin(text, style=Style.TONE)])
                 

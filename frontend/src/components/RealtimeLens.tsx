@@ -127,13 +127,19 @@ export default function RealtimeLens({ onClose }: RealtimeLensProps) {
       {detectedResults.length > 0 && (
         <div 
           className="absolute z-50 w-full flex justify-center px-4 pointer-events-none transition-all duration-200"
-          style={{ top: box.top + box.height + 16 }} // 박스 바로 16px 아래에 위치
+          style={{ 
+            top: box.top > (window.innerHeight * 0.6) 
+        ? `${box.top - 60}px` 
+        : `${box.top + box.height + 20}px`
+          }}
         >
-          <div className="bg-black/80 backdrop-blur-sm px-4 py-2 rounded-2xl max-w-xs shadow-xl border border-white/10">
-            <p className="text-jade-300 font-bold text-sm leading-relaxed text-center font-mono">
-              {/* 모든 병음을 띄어쓰기로 연결해서 한 문장처럼 보여줌 */}
-              {detectedResults.map(item => item.pinyin).join(' ')}
-            </p>
+            {/* 가로로 길게 흐르도록 설정: max-w-sm(너비제한) 해제 및 flex-wrap 추가 */}
+            <div className="bg-black/80 backdrop-blur-md px-4 py-2 rounded-2xl w-full max-w-[340px] shadow-2xl border border-white/10">
+              <p className="text-jade-300 font-bold text-sm leading-relaxed text-center font-mono flex flex-wrap justify-center gap-x-2">
+                {detectedResults.map((item, i) => (
+                  <span key={i} className="whitespace-nowrap">{item.pinyin}</span>
+                ))}
+              </p>
           </div>
         </div>
       )}
