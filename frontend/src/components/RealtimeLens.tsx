@@ -138,7 +138,7 @@ export default function RealtimeLens({ onClose }: RealtimeLensProps) {
       
       {/* ✨ 핵심 수정: flex 속성을 빼고, 문단(p)이 자연스럽게 줄바꿈(break-words) 되도록 변경 */}
       <p className="text-jade-300 font-bold text-sm sm:text-base font-mono text-center leading-loose break-words whitespace-pre-wrap">
-        {detectedResults.map(item => item.pinyin).join('  ')}
+        {detectedResults.map(item => item.pinyin).join('  ').replace(/([。！？，；、.,!?])\s*/g, '$1\n')}
       </p>
 
     </div>

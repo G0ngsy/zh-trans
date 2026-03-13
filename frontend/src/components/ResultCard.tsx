@@ -61,11 +61,11 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
         
         {/* [A] 헤더: 원문 + 병음 */}
         <div className="p-7 pb-6 bg-jade-50/30">
-          <h1 className="text-3xl font-black text-gray-900 mb-3 tracking-tight leading-tight break-all">
-            {result.original}
+          <h1 className="text-3xl font-black text-gray-900 mb-3 tracking-tight leading-tight break-all whitespace-pre-wrap">
+            {result.original.replace(/([。！？，；、.,!?])\s*/g, '$1\n')}
           </h1>
-          <p className="text-sunset-400 font-bold text-lg font-mono">
-            {result.pinyin}
+          <p className="text-sunset-400 font-bold text-lg font-mono whitespace-pre-wrap">
+            {result.pinyin.replace(/([。！？，；、.,!?])\s*/g, '$1\n')}
           </p>
         </div>
 
@@ -140,7 +140,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
             <div className="space-y-1">
               <span className="text-[11px] font-black text-jade-600 uppercase tracking-widest opacity-70">FULL TEXT</span>
               <h4 className="text-sm font-bold text-gray-700">전체 문장 해석</h4>
-              <p className="text-xl font-bold text-gray-700 italic leading-snug break-keep">
+              <p className="text-xl font-bold text-gray-700 italic leading-snug break-keep ">
                 "{result.colloquial}"
               </p>
             </div>

@@ -43,7 +43,7 @@ export default function ActionButtons({ onCameraClick, onUploadClick, onRealtime
       <div className="grid grid-cols-2 gap-4">
         <button 
           onClick={onCameraClick} 
-          className="flex flex-col items-center justify-center gap-3 p-6 bg-white border-2 border-gray-50 rounded-[2rem] hover:border-jade-300 hover:shadow-lg transition-all active:scale-[0.98]"
+          className="flex flex-col items-center justify-center gap-3 p-6 bg-white border-2 border-gray-50 rounded-4xl hover:border-jade-300 hover:shadow-lg transition-all active:scale-[0.98]"
         >
           <div className="w-14 h-14 rounded-full bg-jade-50 flex items-center justify-center text-jade-500">
             <Camera size={28} />
@@ -53,7 +53,7 @@ export default function ActionButtons({ onCameraClick, onUploadClick, onRealtime
 
         <button 
           onClick={onUploadClick} 
-          className="flex flex-col items-center justify-center gap-3 p-6 bg-white border-2 border-gray-50 rounded-[2rem] hover:border-jade-300 hover:shadow-lg transition-all active:scale-[0.98]"
+          className="flex flex-col items-center justify-center gap-3 p-6 bg-white border-2 border-gray-50 rounded-4xl hover:border-jade-300 hover:shadow-lg transition-all active:scale-[0.98]"
         >
           <div className="w-14 h-14 rounded-full bg-jade-50 flex items-center justify-center text-jade-500">
             <ImageUp size={28} />
