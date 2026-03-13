@@ -157,3 +157,62 @@ async def analyze_image(file: UploadFile = File(...)):
     except Exception as e:
         print(f"서버 내부 오류: {e}")
         return {"status": "error", "message": str(e)}
+    
+    
+@app.post("/analyze_realtime")
+async def analyze_realtime(file: UploadFile = File(...)):
+    try:
+        image_bytes = await file.read()
+        nparr = np.frombuffer(image_bytes, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        # 1. OCR 실행
+        result = ocr_engine.ocr(img, cls=True)
+        
+        detected_data =[]
+        if result and result[0]:
+            for line in result[0]:
+                box = line[0]  # 좌표 4개 모서리 [[x1,y1], [x2,y2],[x3,y3], [x4,y4]]
+                text = line[1][0]
+                
+                # 병음 추출
+                pinyin_str = " ".join([item[0] for item in pinyin(text, style=Style.TONE)])
+                
+                # ✨ 핵심: 글자의 한가운데 좌표 계산
+                center_x = (box[0][0] + box[2][0]) / 2
+                center_y = (box[0][1] + box[2][1]) / 2
+                
+                detected_data.append({
+                    "text": text,
+                    "pinyin": pinyin_str,
+                    "x": center_x,
+                    "y": center_y
+                })
+        
+        # ✨ 핵심: 'results'라는 이름으로 배열을 보냄
+        return {"results": detected_data}
+    except Exception as e:
+        print(f"실시간 에러: {e}")
+        return {"results":[]}
+
+
+@app.post("/analyze_text")
+async def analyze_text(data: dict):
+    text = data.get("text", "")
+    if not text:
+        return {"status": "error", "message": "입력된 텍스트가 없습니다."}
+    
+    # 엑사원/번역기 로직 재사용
+    hanja_read = hanja.translate(text, 'substitution')
+    word_list = get_smart_word_list(text)
+    colloquial_result = google_translator.translate(text)
+    pinyin_str = " ".join([item[0] for item in pinyin(text, style=Style.TONE)])
+
+    return {
+        "status": "success",
+        "original": text,
+        "pinyin": pinyin_str,
+        "hanja_read": hanja_read,
+        "literary": word_list,
+        "colloquial": colloquial_result
+    }
