@@ -37,7 +37,9 @@ def get_smart_word_list(text):
     """
     엑사원 AI에게 군더더기 없는 단어장 생성을 요청합니다.
     """
-    prompt = f"""너는 '중국어-한국어 학습용 단어 사전'이야. 다음 문장을 중국어 문법 체계에 맞춰 단어 단위로 쪼개서 JSON으로 만들어줘.
+    limit_prompt = "중요한 핵심 단어 20개 내외를 선정해서" if len(text) > 30 else "모든 단어를"
+    
+    prompt = f"""너는 '중국어 학습용 단어 사전'이야. 다음 문장에서 {limit_prompt} 쪼개서 분석해줘.
 
 문장: "{text}"
 
