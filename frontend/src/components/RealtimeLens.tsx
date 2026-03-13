@@ -125,25 +125,25 @@ export default function RealtimeLens({ onClose }: RealtimeLensProps) {
 
       {/* ✨ [신규] 박스 하단 자막 영역 (병음 표시) */}
       {detectedResults.length > 0 && (
-        <div 
-          className="absolute z-50 w-full flex justify-center px-4 pointer-events-none transition-all duration-200"
-          style={{ 
-            top: box.top > (window.innerHeight * 0.6) 
-        ? `${box.top - 60}px` 
-        : `${box.top + box.height + 20}px`
-          }}
-        >
-            {/* 가로로 길게 흐르도록 설정: max-w-sm(너비제한) 해제 및 flex-wrap 추가 */}
-            <div className="bg-black/80 backdrop-blur-md px-4 py-2 rounded-2xl w-full max-w-[340px] shadow-2xl border border-white/10">
-              <p className="text-jade-300 font-bold text-sm leading-relaxed text-center font-mono flex flex-wrap justify-center gap-x-2">
-                {detectedResults.map((item, i) => (
-                  <span key={i} className="whitespace-nowrap">{item.pinyin}</span>
-                ))}
-              </p>
-          </div>
-        </div>
-      )}
+  <div 
+    className="absolute z-50 left-1/2 -translate-x-1/2 w-[92%] max-w-md flex justify-center pointer-events-none transition-all duration-300"
+    style={{ 
+      ...(box.top > window.innerHeight / 2 
+        ? { bottom: window.innerHeight - box.top + 20 } 
+        : { top: box.top + box.height + 20 }
+      )
+    }}
+  >
+    <div className="bg-black/90 backdrop-blur-xl px-6 py-4 rounded-3xl border border-white/20 shadow-2xl w-full">
+      
+      {/* ✨ 핵심 수정: flex 속성을 빼고, 문단(p)이 자연스럽게 줄바꿈(break-words) 되도록 변경 */}
+      <p className="text-jade-300 font-bold text-sm sm:text-base font-mono text-center leading-loose break-words whitespace-pre-wrap">
+        {detectedResults.map(item => item.pinyin).join('  ')}
+      </p>
 
+    </div>
+  </div>
+)}
     </div>
   );
 }
