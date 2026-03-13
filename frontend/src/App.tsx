@@ -12,8 +12,11 @@ import ResultCard from './components/ResultCard';
 import ImageUploader from './components/ImageUploader';
 import SplashScreen from './components/SplashScreen';
 import VocabPage from './components/VocabPage';
+import RealtimeLens from './components/RealtimeLens';
+import TextInputPage from './components/TextInputPage';
+
 // 화면 상태 정의
-type ViewState = 'HOME' | 'CAMERA' | 'UPLOAD' | 'LOADING' | 'RESULT' | 'VOCAB';
+type ViewState = 'HOME' | 'CAMERA' | 'UPLOAD' | 'LOADING' | 'RESULT' | 'VOCAB' | 'REALTIME'| 'TEXT_INPUT';
 
 
 // 1. 단어장 아이템 타입 정의 (이제 모든 파일에서 통일된 형식을 씀)
@@ -122,6 +125,24 @@ function App() {
     }
   };
 
+
+  // 텍스트 분석 로직 추가 (이미지 없이 텍스트만 보내기)
+const analyzeText = async (text: string) => {
+  setView('LOADING');
+  try {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    // 텍스트 분석용 새로운 API 엔드포인트 호출 (/analyze_text)
+    const response = await axios.post(`${apiUrl}/analyze_text`, { text: text }, {
+      headers: { 'ngrok-skip-browser-warning': '69420' }
+    });
+    setResult(response.data);
+    navigateTo('RESULT');
+  } catch (error) {
+    alert("텍스트 분석에 실패했습니다.");
+    setView('HOME');
+  }
+};
+
   // 3. [업로드 모드] 파일 선택 핸들러
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
@@ -161,20 +182,29 @@ function App() {
               <div className="animate-fade-in pt-12">
                 <HeroText />
                 <div className="mt-8">
+                  {/* ActionButtons에 새로 추가된 속성들을 연결해줍니다 */}
                   <ActionButtons 
                     onCameraClick={() => navigateTo('CAMERA')}
                     onUploadClick={() => navigateTo('UPLOAD')}
+                    onRealtimeClick={() => navigateTo('REALTIME')}
+                    onTextAnalyze={(text) => analyzeText(text)}
                   />
-                 
                 </div>
               </div>
             )}
 
+            {/* === 실시간 번역 화면 === */}
+            {view === 'REALTIME' && (
+              <RealtimeLens onClose={goHome} />
+            )}
+
             {/* 단어장: 뒤로가기는 폰 버튼이 대신하므로 onBack은 goHome 혹은 간단히 처리 */}
             {view === 'VOCAB' && <VocabPage onBack={() => window.history.back()} />}
+            {/* 텍스트 입력 화면 렌더링 */}
+            {view === 'TEXT_INPUT' && (<TextInputPage onAnalyze={analyzeText} />)}  
 
             {/* 뒤로가기 버튼 (UPLOAD 모드에서만 표시) */}
-            {view === 'UPLOAD' && (
+            {(view === 'UPLOAD' || view === 'TEXT_INPUT') && (
               <div className="max-w-2xl mx-auto px-6 mt-4 mb-2">
                 <button 
                   onClick={goHome} 

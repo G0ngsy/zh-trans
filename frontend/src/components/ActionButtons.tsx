@@ -1,43 +1,66 @@
+import { useState } from 'react';
+import { Camera, ImageUp, ScanFace } from 'lucide-react';
 
-// 부모에게 신호를 보낼 함수 타입 정의
 interface ActionButtonsProps {
-  onCameraClick: () => void; // "카메라 버튼 눌렀어!"
-  onUploadClick: () => void; // "업로드 버튼 눌렀어!"
+  onCameraClick: () => void;
+  onUploadClick: () => void;
+  onRealtimeClick: () => void;
+  onTextAnalyze: (text: string) => void;
 }
 
-export default function ActionButtons({ onCameraClick, onUploadClick }: ActionButtonsProps) {
+export default function ActionButtons({ onCameraClick, onUploadClick, onRealtimeClick, onTextAnalyze }: ActionButtonsProps) {
+  const [inputText, setInputText] = useState('');
+
   return (
-    <section className="flex flex-col sm:flex-row items-center justify-center gap-6 px-4 max-w-2xl mx-auto">
+    <section className="w-full max-w-2xl mx-auto px-4 mt-6">
       
-      {/* 1. 카메라 촬영 버튼 */}
-      <button 
-        onClick={onCameraClick} // 클릭 시 실행
-        className="w-full sm:w-1/2 flex flex-col items-center justify-center gap-4 p-10 bg-white border-2 border-transparent rounded-3xl shadow-sm hover:border-jade-300 hover:shadow-lg transition-all group cursor-pointer"
-      >
-        <div className="w-16 h-16 rounded-full bg-jade-50 flex items-center justify-center text-jade-400 group-hover:scale-110 transition-transform">
-          {/* 카메라 아이콘 */}
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
+      {/* 1. 텍스트 직접 입력창 (통합 검색창 스타일) */}
+      <div className="w-full bg-white border-2 border-jade-100 rounded-3xl shadow-sm mb-6 overflow-hidden focus-within:border-jade-400 transition-all">
+        <textarea 
+          placeholder="중국어를 직접 입력하거나 붙여넣으세요..." 
+          className="w-full p-5 outline-none text-gray-800 text-sm h-24 resize-none"
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+        />
+        <div className="flex justify-between items-center px-4 pb-3">
+          <button 
+            onClick={onRealtimeClick}
+            className="flex items-center gap-1.5 text-[11px] font-black text-jade-600 bg-jade-50 px-3 py-1.5 rounded-full hover:bg-jade-100 transition-all"
+          >
+            <ScanFace size={14} /> 실시간 AR 번역
+          </button>
+          <button 
+            onClick={() => onTextAnalyze(inputText)}
+            disabled={!inputText.trim()}
+            className="bg-jade-500 text-white px-6 py-2 rounded-xl font-bold text-sm hover:bg-jade-600 disabled:bg-gray-200 transition-all"
+          >
+            분석하기
+          </button>
         </div>
-        <span className="text-gray-700 font-bold text-lg">카메라로 촬영</span>
-      </button>
+      </div>
 
-      {/* 2. 이미지 업로드 버튼 */}
-      <button 
-        onClick={onUploadClick} // 클릭 시 실행
-        className="w-full sm:w-1/2 flex flex-col items-center justify-center gap-4 p-10 bg-white border-2 border-transparent rounded-3xl shadow-sm hover:border-jade-300 hover:shadow-lg transition-all group cursor-pointer"
-      >
-        <div className="w-16 h-16 rounded-full bg-jade-50 flex items-center justify-center text-jade-400 group-hover:scale-110 transition-transform">
-          {/* 업로드 아이콘 */}
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-          </svg>
-        </div>
-        <span className="text-gray-700 font-bold text-lg">이미지 업로드</span>
-      </button>
+      {/* 2. 카메라 & 업로드 버튼 (그리드 반응형) */}
+      <div className="grid grid-cols-2 gap-4">
+        <button 
+          onClick={onCameraClick} 
+          className="flex flex-col items-center justify-center gap-3 p-6 bg-white border-2 border-gray-50 rounded-[2rem] hover:border-jade-300 hover:shadow-lg transition-all active:scale-[0.98]"
+        >
+          <div className="w-14 h-14 rounded-full bg-jade-50 flex items-center justify-center text-jade-500">
+            <Camera size={28} />
+          </div>
+          <span className="text-gray-700 font-bold text-sm">카메라 촬영</span>
+        </button>
 
+        <button 
+          onClick={onUploadClick} 
+          className="flex flex-col items-center justify-center gap-3 p-6 bg-white border-2 border-gray-50 rounded-[2rem] hover:border-jade-300 hover:shadow-lg transition-all active:scale-[0.98]"
+        >
+          <div className="w-14 h-14 rounded-full bg-jade-50 flex items-center justify-center text-jade-500">
+            <ImageUp size={28} />
+          </div>
+          <span className="text-gray-700 font-bold text-sm">이미지 업로드</span>
+        </button>
+      </div>
     </section>
   );
 }
