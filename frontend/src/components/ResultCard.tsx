@@ -1,5 +1,6 @@
 
-import { RefreshCcw, MessageCircle, Lightbulb, Book} from 'lucide-react';
+import axios from 'axios';
+import { RefreshCcw, MessageCircle, Lightbulb, Book, Volume2} from 'lucide-react';
 
 interface ResultCardProps {
   imageUrl: string | null;
@@ -38,6 +39,23 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
     }
   };
 
+  const playAudio = async (text: string) => {
+  try {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    // 서버의 /speak 엔드포인트 호출
+    const res = await axios.post(`${apiUrl}/speak`, { text: text }, {
+      headers: { 'ngrok-skip-browser-warning': '69420' }
+    });
+    
+    // 오디오 데이터 재생
+    const audio = new Audio(`data:audio/mp3;base64,${res.data.audio}`);
+    audio.play();
+  } catch (e) {
+    console.error("단어 발음 재생 실패:", e);
+    alert("단어 발음 재생에 실패했습니다.");
+  }
+};
+
   return (
     <div className="flex flex-col h-full animate-fade-in pb-10">
       
@@ -64,9 +82,22 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
           <h1 className="text-3xl font-black text-gray-900 mb-3 tracking-tight leading-tight break-all whitespace-pre-wrap">
             {result.original.replace(/([。！？，；、.,!?])\s*/g, '$1\n')}
           </h1>
-          <p className="text-sunset-400 font-bold text-lg font-mono whitespace-pre-wrap">
-            {result.pinyin.replace(/([。！？，；、.,!?])\s*/g, '$1\n')}
-          </p>
+
+          {/* 병음 & 스피커 */}
+          <div className="flex items-start gap-2">
+            {/* ✨ [핵심] 버튼을 맨 앞에 배치 */}
+            <button 
+              onClick={() => playAudio(result.original)}
+              className="bg-white p-1.5 rounded-full shadow-sm border border-orange-100 border-orange-100 text-sunset-300 hover:text-sunset-400 transition-colors"
+            >
+              <Volume2 size={18} />
+            </button>
+
+              {/* 병음 텍스트 */}
+                <p className="text-sunset-400 font-bold text-lg font-mono whitespace-pre-wrap">
+                  {result.pinyin.replace(/([。！？，；、.,!?])\s*/g, '$1\n')}
+                </p>
+          </div>
         </div>
 
         {/* [B] 상세 분석 영역 */}
@@ -107,10 +138,18 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
                 // 2단계 렌더링
                 .map((item, i) => (
                 <div 
-                  key={i} 
-                  onContextMenu={(e) => { e.preventDefault(); saveToVocab(item.word, item.meaning); }} // 마우스 우클릭 혹은 꾹 누르기
-                  className="bg-gray-50/50 border border-gray-100 rounded-2xl p-3.5 transition-all hover:border-jade-300 hover:bg-white hover:shadow-md group"
-                >
+                    key={i} 
+                    onContextMenu={(e) => { e.preventDefault(); saveToVocab(item.word, item.meaning); }} 
+                    // ✨ 1. relative 추가: 스피커 버튼이 이 카드 안에서만 움직이게 함
+                    className="relative bg-gray-50/50 border border-gray-100 rounded-2xl p-3.5 transition-all hover:border-jade-300 hover:bg-white hover:shadow-md group cursor-pointer"
+                  >
+                    {/* ✨ 2. 스피커 버튼 (절대 위치로 우측 상단 고정) */}
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); playAudio(item.word); }}
+                      className="absolute top-2 right-2 text-jade-400 hover:text-jade-600 p-1.5 rounded-full hover:bg-jade-50"
+                    >
+                      <Volume2 size={16} />
+                    </button>
                   {/* 1. 한자 */}
                   <p className="text-jade-600 font-black text-xl mb-0.5 group-hover:scale-105 transition-transform origin-left">
                     {item.word}
