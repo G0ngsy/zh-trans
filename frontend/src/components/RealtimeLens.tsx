@@ -1,3 +1,4 @@
+
 import { useRef, useState, useCallback, useEffect } from 'react';
 import Webcam from 'react-webcam';
 import { X } from 'lucide-react';
@@ -83,17 +84,27 @@ export default function RealtimeLens({ onClose }: RealtimeLensProps) {
           if (!blob) return;
           const formData = new FormData();
           formData.append('file', blob, 'frame.jpg');
-          try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-            const res = await axios.post(`${apiUrl}/analyze_realtime`, formData, {
-              headers: { 'ngrok-skip-browser-warning': '69420' }
-            });
 
-            console.log("실시간 서버 응답 데이터:", res.data);
+          // 환경 변수 및 비상용 허깅페이스 주소 설정
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+          const fallbackApiUrl = 'https://suny0731-hanyu-lens-fallback.hf.space';
+
+          try {
+            // 1순위: 메인 서버 (내 PC) 시도
+            const res = await axios.post(`${apiUrl}/analyze_realtime`, formData, {
+              headers: { 'ngrok-skip-browser-warning': '69420' },
+              timeout: 2000 // 실시간이므로 2초 안에 답 없으면 바로 비상서버로 넘김
+            });
             setDetectedResults(res.data.results ||[]);
-          } catch (e) {
-            // ✨ [해결 2] 빈 블록({}) 대신 콘솔 로그를 남겨서 에러 방지
-            console.error("실시간 분석 중 오류 발생:", e);
+            
+          } catch {
+            // 2순위: 메인 서버가 꺼져있거나 에러나면 비상 서버(허깅페이스) 호출
+            try {
+              const fallbackRes = await axios.post(`${fallbackApiUrl}/analyze_realtime`, formData);
+              setDetectedResults(fallbackRes.data.results ||[]);
+            } catch (fallbackError) {
+              console.error("실시간 분석 서버 연결 실패:", fallbackError);
+            }
           }
         }, 'image/jpeg', 0.8);
       }

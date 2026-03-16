@@ -129,19 +129,33 @@ function App() {
   // 텍스트 분석 로직 추가 (이미지 없이 텍스트만 보내기)
 const analyzeText = async (text: string) => {
   setView('LOADING');
-  try {
+  
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    
     // 텍스트 분석용 새로운 API 엔드포인트 호출 (/analyze_text)
-    const response = await axios.post(`${apiUrl}/analyze_text`, { text: text }, {
-      headers: { 'ngrok-skip-browser-warning': '69420' }
-    });
-    setResult(response.data);
-    navigateTo('RESULT');
-  } catch (error) {
-    alert("텍스트 분석에 실패했습니다.");
-    setView('HOME');
-  }
-};
+    const fallbackApiUrl = 'https://suny0731-hanyu-lens-fallback.hf.space'; // 허깅페이스 주소
+
+    try {
+      // 1순위: 내 PC 메인 서버 시도
+      const response = await axios.post(`${apiUrl}/analyze_text`, { text }, {
+        headers: { 'ngrok-skip-browser-warning': '69420' },
+        timeout: 5000 // 5초 기다림
+      });
+      setResult(response.data);
+      navigateTo('RESULT');
+    } catch (_error) {
+      console.warn("메인 서버 실패, 비상 서버로 텍스트 분석 전환합니다.");
+      try {
+        // 2순위: 허깅페이스 비상 서버 시도
+        const fallbackResponse = await axios.post(`${fallbackApiUrl}/analyze_text`, { text });
+        setResult(fallbackResponse.data);
+        navigateTo('RESULT');
+      } catch (_fallbackError) {
+        alert("텍스트 분석 실패! 서버 연결을 확인해주세요.");
+        setView('HOME');
+      }
+    }
+  };
 
   // 3. [업로드 모드] 파일 선택 핸들러
   const handleFileSelect = (file: File) => {
