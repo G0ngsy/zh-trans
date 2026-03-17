@@ -286,10 +286,12 @@ async def analyze_text(data: dict):
 async def speak(data: dict):
     try:
         text = data.get("text", "")
+        gender = data.get("gender", "female")
         if not text:
             return {"status": "error", "message": "텍스트 없음"}
             
-        voice = "zh-CN-XiaoxiaoNeural"
+        # 성별에 따른 목소리 ID 설정
+        voice = "zh-CN-YunjianNeural" if gender == "male" else "zh-CN-XiaoxiaoNeural"
         communicate = edge_tts.Communicate(text, voice)
         
         # 1. 파일 시스템에 저장하지 않고 메모리(BytesIO)에서 처리
