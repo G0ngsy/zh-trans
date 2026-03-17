@@ -286,21 +286,23 @@ async def analyze_text(data: dict):
 async def speak(data: dict):
     try:
         text = data.get("text", "")
+        if not text:
+            return {"status": "error", "message": "텍스트 없음"}
+            
         voice = "zh-CN-XiaoxiaoNeural"
-        
-        # 1. Edge-TTS 객체 생성
         communicate = edge_tts.Communicate(text, voice)
         
-        # 2. 임시 파일로 저장 (메모리 처리가 복잡하면 파일 저장이 안전합니다)
-        output_file = "temp_audio.mp3"
-        await communicate.save(output_file)
-        
-        # 3. 파일을 읽어서 base64로 인코딩
-        with open(output_file, "rb") as f:
-            audio_data = f.read()
-            encoded_audio = base64.b64encode(audio_data).decode('utf-8')
+        # 1. 파일 시스템에 저장하지 않고 메모리(BytesIO)에서 처리
+        audio_data = b""
+        async for chunk in communicate.stream():
+            if chunk["type"] == "audio":
+                audio_data += chunk["data"]
+                
+        # 2. 바로 base64 인코딩
+        encoded_audio = base64.b64encode(audio_data).decode('utf-8')
             
         return {"audio": encoded_audio}
+        
     except Exception as e:
         print(f"TTS 에러: {e}")
-        return {"status": "error", "message": str(e), "literary": []}
+        return {"status": "error", "message": str(e)}
