@@ -40,21 +40,27 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
   };
 
   const playAudio = async (text: string) => {
-  try {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    // 서버의 /speak 엔드포인트 호출
-    const res = await axios.post(`${apiUrl}/speak`, { text: text }, {
-      headers: { 'ngrok-skip-browser-warning': '69420' }
-    });
+    // 1. 클릭 즉시 오디오 객체를 생성합니다.
+    const audio = new Audio();
     
-    // 오디오 데이터 재생
-    const audio = new Audio(`data:audio/mp3;base64,${res.data.audio}`);
-    audio.play();
-  } catch (e) {
-    console.error("단어 발음 재생 실패:", e);
-    alert("단어 발음 재생에 실패했습니다.");
-  }
-};
+    // 2. [비밀 로직] 클릭하자마자 아주 짧은(0.01초) 빈 오디오를 재생하여 권한을 먼저 땁니다.
+    // 이렇게 하면 브라우저가 "아, 사용자가 지금 소리를 들으려고 하는구나"라고 인식합니다.
+    audio.play().catch(() => {});
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const res = await axios.post(`${apiUrl}/speak`, { text: text }, {
+        headers: { 'ngrok-skip-browser-warning': '69420' }
+      });
+      
+      // 3. 서버에서 데이터가 오면, 미리 뚫어놓은 통로(audio)에 src를 넣어줍니다.
+      audio.src = `data:audio/mp3;base64,${res.data.audio}`;
+      await audio.play(); // 이제는 차단되지 않습니다.
+    } catch (e) {
+      console.error("발음 재생 실패:", e);
+      alert("발음 재생 실패: 서버 연결을 확인해주세요.");
+    }
+  };
 
   return (
     <div className="flex flex-col h-full animate-fade-in pb-10">
@@ -80,7 +86,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
         {/* [A] 헤더: 원문 + 병음 */}
         <div className="p-7 pb-6 bg-jade-50/30">
           <h1 className="text-3xl font-black text-gray-900 mb-3 tracking-tight leading-tight break-all whitespace-pre-wrap">
-            {result.original.replace(/([。！？，；、.,!?])\s*/g, '$1\n')}
+            {result.original}
           </h1>
 
           {/* 병음 & 스피커 */}
@@ -95,7 +101,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
 
               {/* 병음 텍스트 */}
                 <p className="text-sunset-400 font-bold text-lg font-mono whitespace-pre-wrap">
-                  {result.pinyin.replace(/([。！？，；、.,!?])\s*/g, '$1\n')}
+                  {result.pinyin}
                 </p>
           </div>
         </div>
@@ -132,9 +138,9 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
             {/* 단어 카드 그리드 (글자가 길어질 것을 대비해 grid-cols-2 기본 적용) */}
             <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto p-1 pr-2 scrollbar-thin">
                {/* result.literary 뒤에 ?를 붙여서 데이터가 없을 때 에러 방지 */}
-              {result.literary
+              {Array.isArray(result.literary) && result.literary
                 // 1단계 필터: 한자가 하나라도 포함된 단어만 통과
-                ?.filter(item => /[\u4e00-\u9fff]/.test(item.word)) 
+                ?.filter(item => /[\u4e00-\u9fff]/.test(item.word || '')) 
                 // 2단계 렌더링
                 .map((item, i) => (
                 <div 
@@ -143,13 +149,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
                     // ✨ 1. relative 추가: 스피커 버튼이 이 카드 안에서만 움직이게 함
                     className="relative bg-gray-50/50 border border-gray-100 rounded-2xl p-3.5 transition-all hover:border-jade-300 hover:bg-white hover:shadow-md group cursor-pointer"
                   >
-                    {/* ✨ 2. 스피커 버튼 (절대 위치로 우측 상단 고정) */}
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); playAudio(item.word); }}
-                      className="absolute top-2 right-2 text-jade-400 hover:text-jade-600 p-1.5 rounded-full hover:bg-jade-50"
-                    >
-                      <Volume2 size={16} />
-                    </button>
+                   
                   {/* 1. 한자 */}
                   <p className="text-jade-600 font-black text-xl mb-0.5 group-hover:scale-105 transition-transform origin-left">
                     {item.word}

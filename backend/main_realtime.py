@@ -40,9 +40,9 @@ async def analyze_realtime(file: UploadFile = File(...)):
         # 2. 결과 구조화 (좌표 + 텍스트 + 병음)
         detected_data = []
         if result and result[0]:
-            for line in result[0]:
-                box = line[0]  # 좌표 [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
-                text = line[1][0]
+            for line_idx, line in enumerate(result[0]):
+                box = line[0]  # 좌표
+                text = line[1][0] # 텍스트
                 # 병음 추출
                 pinyin_str = "".join([item[0] for item in pinyin(text, style=Style.TONE)])
                 
@@ -54,7 +54,8 @@ async def analyze_realtime(file: UploadFile = File(...)):
                     "text": text,
                     "pinyin": pinyin_str,
                     "x": center_x,
-                    "y": center_y
+                    "y": center_y,
+                    "line_id": line_idx
                 })
         
         return {"results": detected_data}

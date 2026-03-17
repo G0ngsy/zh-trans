@@ -145,11 +145,30 @@ export default function RealtimeLens({ onClose }: RealtimeLensProps) {
       )
     }}
   >
-    <div className="bg-black/90 backdrop-blur-xl px-6 py-4 rounded-3xl border border-white/20 shadow-2xl w-full">
+    <div className="bg-black/90 backdrop-blur-xl px-4 py-4 rounded-3xl border border-white/20 shadow-2xl w-full">
       
       {/* ✨ 핵심 수정: flex 속성을 빼고, 문단(p)이 자연스럽게 줄바꿈(break-words) 되도록 변경 */}
       <p className="text-jade-300 font-bold text-sm sm:text-base font-mono text-center leading-loose break-words whitespace-pre-wrap">
-        {detectedResults.map(item => item.pinyin).join('  ').replace(/([。！？，；、.,!?])\s*/g, '$1\n')}
+        {/* ✨ 핵심: Y 좌표를 비교하여 줄바꿈(\n)을 동적으로 삽입합니다. */}
+        {detectedResults
+          // 1. Y 좌표 기준으로 위에서 아래로 정렬
+          .sort((a, b) => a.y - b.y)
+          // 2. Map으로 돌면서 이전 항목과 Y 좌표 차이 계산
+          .map((item, i, arr) => {
+            // 첫 번째 항목은 그냥 출력
+            if (i === 0) return item.pinyin;
+            
+            // 이전 항목과의 Y 좌표(픽셀) 차이
+            const yDiff = Math.abs(item.y - arr[i - 1].y);
+            
+            // Y 차이가 15px 이상이면 '새로운 줄'로 간주하여 엔터(\n) 추가
+            // 아니면 그냥 같은 줄이므로 띄어쓰기( ) 추가
+            const separator = yDiff > 15 ? '\n' : '  '; 
+            
+            return separator + item.pinyin;
+          })
+          .join('') // 이미 separator를 넣었으므로 그냥 빈 문자열로 합침
+        }
       </p>
 
     </div>
