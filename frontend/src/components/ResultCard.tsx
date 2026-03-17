@@ -39,28 +39,36 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
     }
   };
 
-  const playAudio = async (text: string) => {
-    // 1. 클릭 즉시 오디오 객체를 생성합니다.
-    const audio = new Audio();
-    
-    // 2. [비밀 로직] 클릭하자마자 아주 짧은(0.01초) 빈 오디오를 재생하여 권한을 먼저 땁니다.
-    // 이렇게 하면 브라우저가 "아, 사용자가 지금 소리를 들으려고 하는구나"라고 인식합니다.
-    audio.play().catch(() => {});
 
+  
+  const playAudio = async (text: string) => {
+  const audio = new Audio();
+  audio.play().catch(() => {});
+
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const fallbackApiUrl = 'https://suny0731-hanyu-lens-fallback.hf.space'; // 허깅페이스 주소
+console.log("현재 API 주소:", import.meta.env.VITE_API_URL);
+
+  try {
+    // 1순위: 메인 서버 시도
+    const res = await axios.post(`${apiUrl}/speak`, { text: text }, {
+      headers: { 'ngrok-skip-browser-warning': '69420' },
+      timeout: 3000
+    });
+    audio.src = `data:audio/mp3;base64,${res.data.audio}`;
+    audio.play();
+  } catch {
+    // 2순위: 메인 실패 시 비상 서버 시도
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      const res = await axios.post(`${apiUrl}/speak`, { text: text }, {
-        headers: { 'ngrok-skip-browser-warning': '69420' }
-      });
-      
-      // 3. 서버에서 데이터가 오면, 미리 뚫어놓은 통로(audio)에 src를 넣어줍니다.
-      audio.src = `data:audio/mp3;base64,${res.data.audio}`;
-      await audio.play(); // 이제는 차단되지 않습니다.
-    } catch (e) {
-      console.error("발음 재생 실패:", e);
-      alert("발음 재생 실패: 서버 연결을 확인해주세요.");
+      const fallbackRes = await axios.post(`${fallbackApiUrl}/speak`, { text: text });
+      audio.src = `data:audio/mp3;base64,${fallbackRes.data.audio}`;
+      audio.play();
+    } catch (fallbackError) {
+      console.error("단어 발음 재생 실패:", fallbackError);
+      alert("발음 재생에 실패했습니다.");
     }
-  };
+  }
+};
 
   return (
     <div className="flex flex-col h-full animate-fade-in pb-10">
