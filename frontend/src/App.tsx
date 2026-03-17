@@ -141,8 +141,10 @@ const analyzeText = async (text: string) => {
         headers: { 'ngrok-skip-browser-warning': '69420' },
         timeout: 5000 // 5초 기다림
       });
+
       setResult(response.data);
       navigateTo('RESULT');
+      
     } catch (_error) {
       console.warn("메인 서버 실패, 비상 서버로 텍스트 분석 전환합니다.");
       try {
