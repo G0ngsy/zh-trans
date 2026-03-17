@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { RefreshCcw, MessageCircle, Lightbulb, Book, Volume2} from 'lucide-react';
 
@@ -24,8 +24,20 @@ interface VocabItem {
 
 export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProps) {
   const [gender, setGender] = useState<'female' | 'male'>('female');
-  const audioRef = useRef<HTMLAudioElement | null>(null); // ✨ [핵심] 오디오 참조용
+  
+    // ✨ 1. 여기에 useRef를 반드시 먼저 선언하세요!
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // ✨ 2. 컴포넌트가 화면에서 사라질 때(Unmount) 오디오 자동 정지
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current = null;
+      }
+    };
+  }, []);
   
 
 
@@ -43,7 +55,6 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
       alert('이미 저장된 단어입니다.');
     }
   };
-
 
 
   const playAudio = async (text: string, voiceGender: 'female' | 'male') => {
