@@ -1,4 +1,4 @@
-
+import { useRef, useState } from 'react';
 import axios from 'axios';
 import { RefreshCcw, MessageCircle, Lightbulb, Book, Volume2} from 'lucide-react';
 
@@ -23,6 +23,11 @@ interface VocabItem {
 }
 
 export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProps) {
+  const [gender, setGender] = useState<'female' | 'male'>('female');
+  const audioRef = useRef<HTMLAudioElement | null>(null); // ✨ [핵심] 오디오 참조용
+
+  
+
 
   // 단어 저장 함수
   const saveToVocab = (word: string, meaning: string) => {
@@ -40,35 +45,49 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
   };
 
 
-  
-  const playAudio = async (text: string) => {
-  const audio = new Audio();
-  audio.play().catch(() => {});
 
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-  const fallbackApiUrl = 'https://suny0731-hanyu-lens-fallback.hf.space'; // 허깅페이스 주소
-console.log("현재 API 주소:", import.meta.env.VITE_API_URL);
-
-  try {
-    // 1순위: 메인 서버 시도
-    const res = await axios.post(`${apiUrl}/speak`, { text: text }, {
-      headers: { 'ngrok-skip-browser-warning': '69420' },
-      timeout: 3000
-    });
-    audio.src = `data:audio/mp3;base64,${res.data.audio}`;
-    audio.play();
-  } catch {
-    // 2순위: 메인 실패 시 비상 서버 시도
-    try {
-      const fallbackRes = await axios.post(`${fallbackApiUrl}/speak`, { text: text });
-      audio.src = `data:audio/mp3;base64,${fallbackRes.data.audio}`;
-      audio.play();
-    } catch (fallbackError) {
-      console.error("단어 발음 재생 실패:", fallbackError);
-      alert("발음 재생에 실패했습니다.");
+  const playAudio = async (text: string, voiceGender: 'female' | 'male') => {
+    // 1. 기존에 재생 중인 오디오가 있다면 멈춤
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
     }
-  }
-};
+
+    // 2. 새로운 오디오 객체 생성
+    const audio = new Audio();
+    audioRef.current = audio; // ✨ [추가] 새로 만든 객체를 ref에 저장!
+
+    // 브라우저 재생 권한 획득용 빈 재생
+    audio.play().catch(() => {});
+
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const fallbackApiUrl = 'https://suny0731-hanyu-lens-fallback.hf.space';
+
+    try {
+      const res = await axios.post(`${apiUrl}/speak`, { 
+        text: text, 
+        gender: voiceGender 
+      }, {
+        headers: { 'ngrok-skip-browser-warning': '69420' },
+        timeout: 3000
+      });
+      
+      audio.src = `data:audio/mp3;base64,${res.data.audio}`;
+      audio.play();
+    } catch {
+      try {
+        const fallbackRes = await axios.post(`${fallbackApiUrl}/speak`, { 
+          text: text, 
+          gender: voiceGender 
+        });
+        audio.src = `data:audio/mp3;base64,${fallbackRes.data.audio}`;
+        audio.play();
+      } catch (fallbackError) {
+        console.error("단어 발음 재생 실패:", fallbackError);
+        alert("발음 재생에 실패했습니다.");
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col h-full animate-fade-in pb-10">
@@ -98,21 +117,19 @@ console.log("현재 API 주소:", import.meta.env.VITE_API_URL);
           </h1>
 
           {/* 병음 & 스피커 */}
-          <div className="flex items-start gap-2">
-            {/* ✨ [핵심] 버튼을 맨 앞에 배치 */}
-            <button 
-              onClick={() => playAudio(result.original)}
-              className="bg-white p-1.5 rounded-full shadow-sm border border-orange-100 border-orange-100 text-sunset-300 hover:text-sunset-400 transition-colors"
-            >
-              <Volume2 size={18} />
-            </button>
+          <div className="flex gap-2 mb-3">
+            <div className="flex items-center gap-2">
+           <button onClick={() => playAudio(result.original, gender)} className="text-jade-500 hover:text-jade-700"><Volume2 size={24} /></button>
 
-              {/* 병음 텍스트 */}
-                <p className="text-sunset-400 font-bold text-lg font-mono whitespace-pre-wrap">
-                  {result.pinyin}
-                </p>
-          </div>
+          <button onClick={() => setGender('female')} 
+                  className={`px-3 py-1 rounded-full text-xs font-bold ${gender === 'female' ? 'bg-jade-500 text-white' : 'bg-gray-200'}`}>여성</button>
+
+          <button onClick={() => setGender('male')} 
+                  className={`px-3 py-1 rounded-full text-xs font-bold ${gender === 'male' ? 'bg-jade-500 text-white' : 'bg-gray-200'}`}>남성</button>
         </div>
+      </div>
+        <p className="text-orange-500 font-bold text-lg font-mono">{result.pinyin}</p>
+      </div>
 
         {/* [B] 상세 분석 영역 */}
         <div className="p-7 pt-0 space-y-8">
