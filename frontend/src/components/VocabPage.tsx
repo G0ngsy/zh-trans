@@ -61,7 +61,7 @@ export default function VocabPage({ onBack }: VocabPageProps) {
            hover:bg-jade-300 hover:border-jade-400 
            active:scale-[0.98] active:bg-jade-400"
       >
-        홈으로 돌아가기
+         뒤로가기
       </button>
     </div>
   );
