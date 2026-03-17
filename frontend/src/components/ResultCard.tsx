@@ -117,15 +117,33 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
           </h1>
 
           {/* 병음 & 스피커 */}
-          <div className="flex gap-2 mb-3">
-            <div className="flex items-center gap-2">
-           <button onClick={() => playAudio(result.original, gender)} className="text-jade-500 hover:text-jade-700"><Volume2 size={24} /></button>
+          <div className="flex gap-2 mb-3 ">
+            <div className="flex items-center gap-2 ">
+           <button onClick={() => playAudio(result.original, gender)} className="text-jade-500 hover:text-jade-700 transition-colors cursor-pointer"><Volume2 size={24} /></button>
 
-          <button onClick={() => setGender('female')} 
-                  className={`px-3 py-1 rounded-full text-xs font-bold ${gender === 'female' ? 'bg-jade-500 text-white' : 'bg-gray-200'}`}>여성</button>
+          {/* [여성 버튼] */}
+          <button 
+            onClick={() => setGender('female')} 
+            className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              gender === 'female' 
+                ? 'bg-jade-500 text-white shadow-md' 
+                : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
+            }`}
+          >
+            여성
+          </button>
 
-          <button onClick={() => setGender('male')} 
-                  className={`px-3 py-1 rounded-full text-xs font-bold ${gender === 'male' ? 'bg-jade-500 text-white' : 'bg-gray-200'}`}>남성</button>
+          {/* [남성 버튼] */}
+          <button 
+            onClick={() => setGender('male')} 
+            className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              gender === 'male' 
+                ? 'bg-jade-500 text-white shadow-md' 
+                : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
+            }`}
+          >
+            남성
+          </button>
         </div>
       </div>
         <p className="text-orange-500 font-bold text-lg font-mono  break-all whitespace-pre-wrap">{result.pinyin}</p>
