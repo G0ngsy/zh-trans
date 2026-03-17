@@ -128,7 +128,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
                   className={`px-3 py-1 rounded-full text-xs font-bold ${gender === 'male' ? 'bg-jade-500 text-white' : 'bg-gray-200'}`}>남성</button>
         </div>
       </div>
-        <p className="text-orange-500 font-bold text-lg font-mono">{result.pinyin}</p>
+        <p className="text-orange-500 font-bold text-lg font-mono  break-all whitespace-pre-wrap">{result.pinyin}</p>
       </div>
 
         {/* [B] 상세 분석 영역 */}
@@ -171,7 +171,6 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
                 <div 
                     key={i} 
                     onContextMenu={(e) => { e.preventDefault(); saveToVocab(item.word, item.meaning); }} 
-                    // ✨ 1. relative 추가: 스피커 버튼이 이 카드 안에서만 움직이게 함
                     className="relative bg-gray-50/50 border border-gray-100 rounded-2xl p-3.5 transition-all hover:border-jade-300 hover:bg-white hover:shadow-md group cursor-pointer"
                   >
                    
