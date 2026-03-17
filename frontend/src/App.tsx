@@ -105,7 +105,7 @@ function App() {
       // 1순위: 내 PC 서버 시도
       const response = await axios.post(`${mainApi}/analyze`, formData, {
         headers: { 'Content-Type': 'multipart/form-data', 'ngrok-skip-browser-warning': '69420' },
-        timeout: 5000 // 5초 대기
+        timeout: 40000 // 40초 대기
       });
       setResult(response.data); 
       navigateTo('RESULT');

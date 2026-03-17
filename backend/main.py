@@ -74,7 +74,7 @@ def get_smart_word_list(text):
             "prompt": prompt,
             "stream": False,
             "format": "json"
-        }, timeout=15)
+        }, timeout=60)
         
         ai_data = json.loads(response.json()['response'])
         # 2. [필터링 핵심 코드] 한자가 하나라도 포함된 단어만 남기기
@@ -112,26 +112,73 @@ async def analyze_image(file: UploadFile = File(...)):
         # 바이너리 데이터를 OpenCV 이미지로 변환
         nparr = np.frombuffer(image_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-        # OCR 실행
-        # 2. OCR 실행 (안정 버전에서는 cls 인자 없이 실행 가능)
-        result = ocr_engine.ocr(img, cls=True)
-
-        # PaddleOCR의 결과는 [[좌표, (텍스트, 신뢰도)], ...] 형태.
-        # 여기서 텍스트만 뽑아 한 문장으로 
-        full_text = ""
-        # PaddleOCR 결과 파싱: result[0] 안에 [[좌표, (텍스트, 확률)], ...]이 들어있음
-        if result and result[0]:
-            for line in result[0]:
-                text = line[1][0] # 텍스트만 추출
-                full_text += text + " "
         
-          # 마지막 공백 제거 및 정리
-        full_text = full_text.strip()
+        if img is None:
+            return {"status": "error", "message": "이미지를 읽을 수 없습니다."}
 
+        # 1. OCR 실행
+        result = ocr_engine.ocr(img)
 
-        if not full_text:
-            return {"status": "error", "message": "글자를 인식하지 못했습니다."}
+        if not result or not result[0]:
+            return {"status": "error", "message": "글자를 인식하지 못했습니다.", "literary": []}
+
+        # ✨ [개선된 로직] 좌표 데이터 정밀 추출
+        boxes_and_texts = []
+        for line in result[0]:
+            box = line[0]  # [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
+            text = line[1][0]
+            
+            # 박스의 중심 Y 좌표 (top-left와 bottom-left의 중간)
+            center_y = (box[0][1] + box[3][1]) / 2 
+            # 박스의 중심 X 좌표
+            center_x = (box[0][0] + box[1][0]) / 2 
+            # 박스의 세로 높이
+            height = box[3][1] - box[0][1]
+            
+            boxes_and_texts.append({
+                "text": text, 
+                "x": center_x, 
+                "y": center_y, 
+                "h": height
+            })
+
+        # 1. Y축(위에서 아래) 기준으로 1차 정렬
+        boxes_and_texts.sort(key=lambda item: item['y'])
+
+        # 2. 같은 줄(Line) 판별 및 묶기
+        lines = []
+        current_line = []
+        
+        for item in boxes_and_texts:
+            if not current_line:
+                current_line.append(item)
+            else:
+                # 현재 줄의 '평균 Y 좌표'를 구해서 비교합니다. (이게 훨씬 정확함)
+                avg_y = sum(i['y'] for i in current_line) / len(current_line)
+                
+                # Y 좌표 차이가 글자 높이(h)의 50% 이내면 같은 줄로 인정!
+                if abs(item['y'] - avg_y) < (item['h'] * 0.5):
+                    current_line.append(item)
+                else:
+                    # 차이가 크면 기존 줄을 저장하고 새 줄을 시작
+                    lines.append(current_line)
+                    current_line = [item]
+        
+        if current_line:
+            lines.append(current_line)
+
+        # 3. 같은 줄 안에서 X축(왼쪽에서 오른쪽)으로 2차 정렬 및 텍스트 합치기
+        full_text_lines = []
+        for line in lines:
+            line.sort(key=lambda item: item['x'])
+            # 띄어쓰기 한 칸을 넣어서 글자가 너무 뭉개지지 않게 합침
+            line_text = " ".join([item['text'] for item in line])
+            full_text_lines.append(line_text)
+
+        # 4. 최종 텍스트: 각 줄을 엔터(\n)로 연결
+        full_text = "\n".join(full_text_lines).strip()
+        print("정렬된 텍스트 확인:\n", full_text)
+
         
         
         # --- [Step 2: 기존 분석 로직 그대로 진행] ---
@@ -146,8 +193,11 @@ async def analyze_image(file: UploadFile = File(...)):
         colloquial_result = google_translator.translate(full_text)
 
         # E. 성조 병음 변환 (pypinyin)
+        # (엔터도 그대로 살려두기 위해 텍스트 전체를 넘깁니다)
         pinyin_list = pinyin(full_text, style=Style.TONE)
-        pinyin_str = " ".join([item[0] for item in pinyin_list])
+        pinyin_str = " ".join([item[0] if item[0] != '\n' else '\n' for item in pinyin_list])
+        # 깔끔하게 정리 (엔터 주변 공백 제거)
+        pinyin_str = pinyin_str.replace(" \n ", "\n").replace("\n ", "\n")
 
         # F. 최종 데이터 조합하여 반환
         return {
@@ -160,8 +210,17 @@ async def analyze_image(file: UploadFile = File(...)):
         }
 
     except Exception as e:
-        print(f"서버 내부 오류: {e}")
-        return {"status": "error", "message": str(e)}
+        # ✨ [핵심] 어떤 에러가 났는지 터미널에 아주 크게 출력합니다!
+        import traceback
+        print("================ 에러 발생!! ================")
+        traceback.print_exc()
+        print("===========================================")
+        
+        # 리액트에게 에러가 났다고 알려줍니다.
+        return {
+            "status": "error", 
+            "message": f"분석 중 서버 오류가 발생했습니다: {str(e)}"
+        }
     
     
 @app.post("/analyze_realtime")
@@ -244,4 +303,4 @@ async def speak(data: dict):
         return {"audio": encoded_audio}
     except Exception as e:
         print(f"TTS 에러: {e}")
-        return {"status": "error", "message": str(e)}
+        return {"status": "error", "message": str(e), "literary": []}

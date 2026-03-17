@@ -86,7 +86,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
         {/* [A] 헤더: 원문 + 병음 */}
         <div className="p-7 pb-6 bg-jade-50/30">
           <h1 className="text-3xl font-black text-gray-900 mb-3 tracking-tight leading-tight break-all whitespace-pre-wrap">
-            {result.original.replace(/([。！？，；、.,!?])\s*/g, '$1\n')}
+            {result.original}
           </h1>
 
           {/* 병음 & 스피커 */}
@@ -101,7 +101,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
 
               {/* 병음 텍스트 */}
                 <p className="text-sunset-400 font-bold text-lg font-mono whitespace-pre-wrap">
-                  {result.pinyin.replace(/([。！？，；、.,!?])\s*/g, '$1\n')}
+                  {result.pinyin}
                 </p>
           </div>
         </div>
@@ -138,9 +138,9 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
             {/* 단어 카드 그리드 (글자가 길어질 것을 대비해 grid-cols-2 기본 적용) */}
             <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto p-1 pr-2 scrollbar-thin">
                {/* result.literary 뒤에 ?를 붙여서 데이터가 없을 때 에러 방지 */}
-              {result.literary
+              {Array.isArray(result.literary) && result.literary
                 // 1단계 필터: 한자가 하나라도 포함된 단어만 통과
-                ?.filter(item => /[\u4e00-\u9fff]/.test(item.word)) 
+                ?.filter(item => /[\u4e00-\u9fff]/.test(item.word || '')) 
                 // 2단계 렌더링
                 .map((item, i) => (
                 <div 
