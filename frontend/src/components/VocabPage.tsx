@@ -12,6 +12,7 @@ interface VocabPageProps {
   onBack: () => void;
 }
 
+/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 export default function VocabPage({ onBack }: VocabPageProps) {
   const [words, setWords] = useState<VocabItem[]>(
     JSON.parse(localStorage.getItem('myVocab') || '[]')
