@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import { RefreshCcw, MessageCircle, Lightbulb, Book, Volume2} from 'lucide-react';
+import { RefreshCcw, MessageCircle, Lightbulb, Book, Volume2, Plus} from 'lucide-react';
 
 interface ResultCardProps {
   imageUrl: string | null;
@@ -202,20 +202,30 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
                     onContextMenu={(e) => { e.preventDefault(); saveToVocab(item.word, item.meaning); }} 
                     className="relative bg-gray-50/50 border border-gray-100 rounded-2xl p-3.5 transition-all hover:border-jade-300 hover:bg-white hover:shadow-md group cursor-pointer"
                   >
-                   <button 
-                      onClick={(e) => {
-                        e.stopPropagation(); // 카드 클릭 이벤트와 겹치지 않게 방지
-                        playAudio(item.word, gender); // 해당 단어만 재생
-                      }}
-                      className="absolute top-2 right-2 text-jade-400 hover:text-jade-600 transition-colors"
-                    >
-                      <Volume2 size={16} />
-                    </button>
+                    
                   {/* 1. 한자 */}
                   <p className="text-jade-600 font-black text-xl mb-0.5 group-hover:scale-105 transition-transform origin-left">
                     {item.word}
                   </p>
-                  
+
+                  <div className="absolute top-2 right-2 flex gap-1">
+                    {/* 1. 듣기 버튼 */}
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); playAudio(item.word, gender); }}
+                      className="p-1.5 text-jade-400 hover:text-jade-600 rounded-full hover:bg-jade-50"
+                    >
+                      <Volume2 size={16} />
+                    </button>
+                    
+                    {/* 2. 저장 버튼 (Plus ) */}
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); saveToVocab(item.word, item.meaning); }}
+                      className="p-1.5 text-sunset-300 hover:text-sunset-400 rounded-full hover:bg-sunset-50"
+                    >
+                      <Plus size={16} /> 
+                    </button>
+                  </div>
+
                   {/* 2. 병음 (성조 포함) */}
                   <p className="text-sunset-400 font-bold text-xs font-mono mb-2">
                     {item.pinyin}
