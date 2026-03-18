@@ -30,13 +30,13 @@ export default function VocabPage({ onBack }: VocabPageProps) {
   };
 
   return (
-    <div className="p-6 animate-fade-in max-w-md mx-auto">
+    <div className="p-6 animate-fade-in max-w-4xl mx-auto">
       <h2 className="text-2xl font-black text-gray-800 mb-6 text-center">나의 단어장</h2>
       
       {words.length === 0 ? (
         <p className="text-gray-400 text-center mt-10">아직 저장된 단어가 없어요!</p>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {words.map((item, i) => (
             <div key={i} className="bg-white p-4 rounded-2xl border border-jade-100 flex justify-between items-center shadow-sm">
               <div>

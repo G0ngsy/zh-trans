@@ -82,7 +82,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
         headers: { 'ngrok-skip-browser-warning': '69420' },
         timeout: 3000
       });
-      
+      console.log("서버가 보낸 데이터:", res.data);
       audio.src = `data:audio/mp3;base64,${res.data.audio}`;
       audio.play();
     } catch {
