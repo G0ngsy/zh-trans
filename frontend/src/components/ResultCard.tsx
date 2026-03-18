@@ -42,13 +42,13 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
 
 
   // 단어 저장 함수
-  const saveToVocab = (word: string, meaning: string) => {
+  const saveToVocab = (word: string, meaning: string,pinyin: string) => {
     // 저장된 데이터를 VocabItem 배열로 명확하게 가져옴
     const saved: VocabItem[] = JSON.parse(localStorage.getItem('myVocab') || '[]');
     
     // 중복 저장 방지
     if (!saved.find((item) => item.word === word)) {
-      const newVocab = [...saved, { word, meaning }];
+      const newVocab = [...saved, { word, meaning ,pinyin }];
       localStorage.setItem('myVocab', JSON.stringify(newVocab));
       alert('단어장에 저장되었습니다!');
     } else {
@@ -199,7 +199,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
                 .map((item, i) => (
                 <div 
                     key={i} 
-                    onContextMenu={(e) => { e.preventDefault(); saveToVocab(item.word, item.meaning); }} 
+                    onContextMenu={(e) => { e.preventDefault(); saveToVocab(item.word, item.meaning,item.pinyin); }} 
                     className="relative bg-gray-50/50 border border-gray-100 rounded-2xl p-3.5 transition-all hover:border-jade-300 hover:bg-white hover:shadow-md group cursor-pointer"
                   >
                     
@@ -208,21 +208,23 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
                     {item.word}
                   </p>
 
-                  <div className="absolute top-2 right-2 flex gap-1">
-                    {/* 1. 듣기 버튼 */}
+                  <div className="absolute top-2 right-2 flex flex-col gap-1">
+                    
+                    
+                    {/* 저장 버튼 (+) */}
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); saveToVocab(item.word, item.meaning,item.pinyin); }}
+                      className="p-1.5 text-sunset-300 hover:text-sunset-400 rounded-full hover:bg-sunset-50"
+                    >
+                      <Plus size={16} /> 
+                    </button>
+
+                    {/* 듣기 버튼 */}
                     <button 
                       onClick={(e) => { e.stopPropagation(); playAudio(item.word, gender); }}
                       className="p-1.5 text-jade-400 hover:text-jade-600 rounded-full hover:bg-jade-50"
                     >
                       <Volume2 size={16} />
-                    </button>
-                    
-                    {/* 2. 저장 버튼 (Plus ) */}
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); saveToVocab(item.word, item.meaning); }}
-                      className="p-1.5 text-sunset-300 hover:text-sunset-400 rounded-full hover:bg-sunset-50"
-                    >
-                      <Plus size={16} /> 
                     </button>
                   </div>
 
