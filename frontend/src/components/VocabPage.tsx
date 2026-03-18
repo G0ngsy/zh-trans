@@ -99,7 +99,7 @@ export default function VocabPage({ onBack }: VocabPageProps) {
       )}
       
       <button 
-        onClick={onBack} 
+        onClick={() => {window.history.back(); }} 
         className="mt-8 w-full py-4 rounded-2xl font-bold transition-all bg-jade-200 text-jade-700 border border-jade-300 hover:bg-jade-300 active:scale-[0.98]"
       >
          뒤로가기
