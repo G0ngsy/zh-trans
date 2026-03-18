@@ -202,7 +202,15 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
                     onContextMenu={(e) => { e.preventDefault(); saveToVocab(item.word, item.meaning); }} 
                     className="relative bg-gray-50/50 border border-gray-100 rounded-2xl p-3.5 transition-all hover:border-jade-300 hover:bg-white hover:shadow-md group cursor-pointer"
                   >
-                   
+                   <button 
+                      onClick={(e) => {
+                        e.stopPropagation(); // 카드 클릭 이벤트와 겹치지 않게 방지
+                        playAudio(item.word, gender); // 해당 단어만 재생
+                      }}
+                      className="absolute top-2 right-2 text-jade-400 hover:text-jade-600 transition-colors"
+                    >
+                      <Volume2 size={16} />
+                    </button>
                   {/* 1. 한자 */}
                   <p className="text-jade-600 font-black text-xl mb-0.5 group-hover:scale-105 transition-transform origin-left">
                     {item.word}
