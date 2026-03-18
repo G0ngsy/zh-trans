@@ -270,7 +270,7 @@ const analyzeText = async (text: string) => {
 
             {/* 결과창: 여기서 단어장 갔다가 뒤로오면 다시 여기가 보임! */}
             {view === 'RESULT' && result && (
-              <div className="max-w-md mx-auto px-4 animate-fade-in pt-4">
+              <div className="max-w-4xl mx-auto px-4 animate-fade-in pt-4">
                 <ResultCard 
                   imageUrl={previewUrl}
                   result={result}

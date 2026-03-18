@@ -101,7 +101,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
   };
 
   return (
-    <div className="flex flex-col h-full animate-fade-in pb-10">
+    <div className="flex flex-col  h-full animate-fade-in pb-10">
       
       {/* 1. 분석된 이미지 미리보기 */}
       {imageUrl && (
@@ -119,7 +119,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
       </div>
 
       {/* 3. 메인 분석 결과 카드 */}
-      <div className="bg-white border-2 border-jade-100 rounded-[2.5rem] shadow-xl shadow-jade-900/5 overflow-hidden mb-6">
+      <div className="bg-white border-2 border-jade-100 rounded-2xl md:rounded-[2.5rem] shadow-xl md:shadow-2xl mb-4 md:mb-6">
         
         {/* [A] 헤더: 원문 + 병음 */}
         <div className="p-7 pb-6 bg-jade-50/30">
@@ -190,7 +190,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
             </div>
 
             {/* 단어 카드 그리드 (글자가 길어질 것을 대비해 grid-cols-2 기본 적용) */}
-            <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto p-1 pr-2 scrollbar-thin">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[300px] overflow-y-auto p-1 pr-2 scrollbar-thin">
                {/* result.literary 뒤에 ?를 붙여서 데이터가 없을 때 에러 방지 */}
               {Array.isArray(result.literary) && result.literary
                 // 1단계 필터: 한자가 하나라도 포함된 단어만 통과
