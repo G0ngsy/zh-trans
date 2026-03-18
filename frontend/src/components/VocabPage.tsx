@@ -1,10 +1,11 @@
-import { Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react'; // useRef 추가
+import { Trash2, Volume2 } from 'lucide-react';
+import axios from 'axios';
 
-// 1. 저장된 단어의 모양을 정의합니다.
 interface VocabItem {
   word: string;
   meaning: string;
+  pinyin: string;
 }
 
 interface VocabPageProps {
@@ -12,20 +13,49 @@ interface VocabPageProps {
 }
 
 export default function VocabPage({ onBack }: VocabPageProps) {
-  // 1. 단어장 데이터를 '상태(State)'로 관리합니다.
   const [words, setWords] = useState<VocabItem[]>(
     JSON.parse(localStorage.getItem('myVocab') || '[]')
   );
 
-  // 2. 삭제 함수: 새로고침 없이 상태만 변경
+  // ✨ 1. 오디오 참조용 변수 추가
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // ✨ 2. 발음 재생 함수 (ResultCard와 동일하게 성별 인자 추가)
+  const playAudio = async (text: string) => {
+    // 중복 재생 방지
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+
+    const audio = new Audio();
+    audioRef.current = audio;
+    audio.play().catch(() => {});
+
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const fallbackApiUrl = 'https://suny0731-hanyu-lens-fallback.hf.space';
+
+    try {
+      const res = await axios.post(`${apiUrl}/speak`, { text: text, gender: 'female' }, {
+        headers: { 'ngrok-skip-browser-warning': '69420' },
+        timeout: 3000
+      });
+      audio.src = `data:audio/mp3;base64,${res.data.audio}`;
+      audio.play();
+    } catch {
+      try {
+        const fallbackRes = await axios.post(`${fallbackApiUrl}/speak`, { text: text, gender: 'female' });
+        audio.src = `data:audio/mp3;base64,${fallbackRes.data.audio}`;
+        audio.play();
+      } catch (e) {
+        console.error("재생 실패:", e);
+      }
+    }
+  };
+
   const deleteWord = (index: number) => {
-    // 필터링된 배열 생성
     const updated = words.filter((_, i) => i !== index);
-    
-    // 로컬스토리지 업데이트
     localStorage.setItem('myVocab', JSON.stringify(updated));
-    
-    // 상태를 업데이트하여 화면을 즉시 다시 그림 (새로고침 X)
     setWords(updated);
   };
 
@@ -34,15 +64,29 @@ export default function VocabPage({ onBack }: VocabPageProps) {
       <h2 className="text-2xl font-black text-gray-800 mb-6 text-center">나의 단어장</h2>
       
       {words.length === 0 ? (
-        <p className="text-gray-400 text-center mt-10">아직 저장된 단어가 없어요!</p>
+        <p className="text-gray-400 text-center mt-10">아직 저장한 단어가 없어요!</p>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {words.map((item, i) => (
-            <div key={i} className="bg-white p-4 rounded-2xl border border-jade-100 flex justify-between items-center shadow-sm">
-              <div>
+            <div key={i} className="bg-white p-4 rounded-2xl border border-jade-100 flex items-center shadow-sm hover:shadow-md transition-shadow">
+              
+              {/* 스피커 버튼 */}
+              <button 
+                onClick={() => playAudio(item.word)} 
+                className="mr-4 text-jade-400 hover:text-jade-600 p-2 hover:bg-jade-50 rounded-full transition-colors"
+              >
+                <Volume2 size={20} />
+              </button>
+
+              <div className="flex-1">
                 <p className="text-jade-600 font-bold text-lg">{item.word}</p>
+                <p className="text-sunset-400 font-bold text-xs font-mono mb-2">
+                    {item.pinyin}
+                  </p>
                 <p className="text-gray-600 text-sm">{item.meaning}</p>
               </div>
+
+              {/* 삭제 버튼 */}
               <button 
                 onClick={() => deleteWord(i)} 
                 className="text-crimson-600 hover:text-crimson-800 transition-all p-2 rounded-full hover:bg-crimson-50"
@@ -56,10 +100,7 @@ export default function VocabPage({ onBack }: VocabPageProps) {
       
       <button 
         onClick={onBack} 
-        className="mt-8 w-full py-4 rounded-2xl font-bold transition-all 
-           bg-jade-200 text-jade-700 border border-jade-300 
-           hover:bg-jade-300 hover:border-jade-400 
-           active:scale-[0.98] active:bg-jade-400"
+        className="mt-8 w-full py-4 rounded-2xl font-bold transition-all bg-jade-200 text-jade-700 border border-jade-300 hover:bg-jade-300 active:scale-[0.98]"
       >
          뒤로가기
       </button>
