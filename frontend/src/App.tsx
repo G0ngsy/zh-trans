@@ -99,7 +99,7 @@ function App() {
 
     // 환경 변수(메인)와 비상용 허깅페이스 주소
     const mainApi = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    const fallbackApi = "https://suny0731-hanyu-lens-fallback.hf.space"; 
+    const fallbackApi = 'https://suny0731-hanyu-lens-fallback.hf.space'; 
 
     try {
       // 1순위: 내 PC 서버 시도
@@ -113,14 +113,12 @@ function App() {
       console.warn("메인 서버 실패, 비상 서버로 전환합니다.");
       try {
         // 2순위: 내 PC 서버 실패 시 허깅페이스로 시도
-        const fallbackResponse = await axios.post(`${fallbackApi}/analyze`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        setResult(fallbackResponse.data); 
-        navigateTo('RESULT');
-      } catch (_fallbackError) {
-        alert("분석 실패! 서버 연결을 확인해주세요.");
-        setView('HOME');
+         const fallbackRes = await axios.post(`${fallbackApi}/analyze`, formData);
+      setResult(fallbackRes.data);
+      setView('RESULT');
+    } catch (e) {
+      alert("서버 연결 실패");
+      setView('HOME');
       }
     }
   };
