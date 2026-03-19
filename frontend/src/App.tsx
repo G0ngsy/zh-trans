@@ -213,7 +213,7 @@ const analyzeText = async (text: string) => {
             )}
 
             {/* 단어장: 뒤로가기는 폰 버튼이 대신하므로 onBack은 goHome 혹은 간단히 처리 */}
-            {view === 'VOCAB' && <VocabPage onBack={() => window.history.back()} />}
+            {view === 'VOCAB' && <VocabPage onBack={goHome} />}
             {/* 텍스트 입력 화면 렌더링 */}
             {view === 'TEXT_INPUT' && (<TextInputPage onAnalyze={analyzeText} />)}  
 
