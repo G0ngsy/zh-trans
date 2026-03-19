@@ -12,7 +12,7 @@ interface VocabPageProps {
   onBack: () => void;
 }
 
-/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+
 export default function VocabPage({ onBack }: VocabPageProps) {
   const [words, setWords] = useState<VocabItem[]>(
     JSON.parse(localStorage.getItem('myVocab') || '[]')
@@ -99,12 +99,23 @@ export default function VocabPage({ onBack }: VocabPageProps) {
         </div>
       )}
       
-      <button 
-        onClick={() => {window.history.back(); }} 
-        className="mt-8 w-full py-4 rounded-2xl font-bold transition-all bg-jade-200 text-jade-700 border border-jade-300 hover:bg-jade-300 active:scale-[0.98]"
-      >
-         뒤로가기
-      </button>
+      <div className="flex gap-3 mt-8">
+        {/* 1. 이전 화면으로 이동 (history.back) */}
+        <button 
+          onClick={() => window.history.back()}
+          className="flex-1 py-4 rounded-2xl font-bold transition-all bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200 active:scale-[0.98]"
+        >
+          이전으로
+        </button>
+
+        {/* 2. 홈으로 이동 (onBack 함수 실행) */}
+        <button 
+          onClick={onBack}
+          className="flex-1 py-4 rounded-2xl font-bold transition-all bg-jade-500 text-white shadow-lg shadow-jade-200 hover:bg-jade-600 active:scale-[0.98]"
+        >
+          홈으로
+        </button>
+      </div>
     </div>
   );
 }
