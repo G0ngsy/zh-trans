@@ -166,7 +166,21 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
           </button>
         </div>
       </div>
-        <p className="text-orange-500 font-bold text-lg font-mono  break-all whitespace-pre-wrap">{result.pinyin}</p>
+        <p className="text-orange-500 font-bold text-lg font-mono  break-all whitespace-pre-wrap">
+          {result.pinyin.split('\n').map((line, lineIdx) => (
+            <div key={lineIdx} className="mb-2"> {/* 각 줄을 div로 감싸서 줄바꿈 강제 */}
+              {line.replace(/([。！？，；、.,!?])\s*/g, '$1\n')
+          .split('\n').filter(Boolean).map((segment, segIdx) => (
+                <span
+                  key={segIdx}
+                  className="cursor-pointer hover:bg-jade-100 hover:rounded px-0.5 transition-all inline-block"
+                  onClick={() => playAudio(segment.trim(), gender)} 
+                >
+                  {segment}{' '}
+                </span>
+              ))}
+            </div>
+          ))}</p>
       </div>
 
         {/* [B] 상세 분석 영역 */}
