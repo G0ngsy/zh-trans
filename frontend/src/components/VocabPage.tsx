@@ -74,7 +74,7 @@ export default function VocabPage({ onBack }: VocabPageProps) {
               {/* 스피커 버튼 */}
               <button 
                 onClick={() => playAudio(item.word)} 
-                className="mr-4 text-jade-400 hover:text-jade-600 p-2 hover:bg-jade-50 rounded-full transition-colors"
+                className="mr-4 text-jade-400 hover:text-jade-600 p-2 hover:bg-jade-50 rounded-full transition-colors cursor-pointer"
               >
                 <Volume2 size={20} />
               </button>
@@ -90,7 +90,7 @@ export default function VocabPage({ onBack }: VocabPageProps) {
               {/* 삭제 버튼 */}
               <button 
                 onClick={() => deleteWord(i)} 
-                className="text-crimson-600 hover:text-crimson-800 transition-all p-2 rounded-full hover:bg-crimson-50"
+                className="text-crimson-600 hover:text-crimson-800 transition-all p-2 rounded-full hover:bg-crimson-50 cursor-pointer"
               >
                 <Trash2 size={18} />
               </button>

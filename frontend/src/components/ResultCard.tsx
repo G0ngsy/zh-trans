@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import { RefreshCcw, MessageCircle, Lightbulb, Book, Volume2, Plus} from 'lucide-react';
+import { RefreshCcw, MessageCircle, Lightbulb, Book, Volume2, Plus, VolumeX} from 'lucide-react';
 
 interface ResultCardProps {
   imageUrl: string | null;
@@ -131,7 +131,16 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
           <div className="flex gap-2 mb-3 ">
             <div className="flex items-center gap-2 ">
            <button onClick={() => playAudio(result.original, gender)} className="text-jade-500 hover:text-jade-700 transition-colors cursor-pointer"><Volume2 size={24} /></button>
-
+          <button 
+            onClick={() => {
+              if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+              }
+            }}
+            className="bg-gray-100 p-2 rounded-full text-gray-500 hover:bg-gray-200 transition-all cursor-pointer">
+            <VolumeX size={18} fill="currentColor" />
+          </button>
           {/* [여성 버튼] */}
           <button 
             onClick={() => setGender('female')} 
@@ -214,7 +223,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
                     {/* 저장 버튼 (+) */}
                     <button 
                       onClick={(e) => { e.stopPropagation(); saveToVocab(item.word, item.meaning,item.pinyin); }}
-                      className="p-1.5 text-sunset-300 hover:text-sunset-400 rounded-full hover:bg-sunset-50"
+                      className="p-1.5 text-sunset-300 hover:text-sunset-400 rounded-full hover:bg-sunset-50 cursor-pointer"
                     >
                       <Plus size={16} /> 
                     </button>
@@ -222,7 +231,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
                     {/* 듣기 버튼 */}
                     <button 
                       onClick={(e) => { e.stopPropagation(); playAudio(item.word, gender); }}
-                      className="p-1.5 text-jade-400 hover:text-jade-600 rounded-full hover:bg-jade-50"
+                      className="p-1.5 text-jade-400 hover:text-jade-600 rounded-full hover:bg-jade-50 cursor-pointer"
                     >
                       <Volume2 size={16} />
                     </button>
