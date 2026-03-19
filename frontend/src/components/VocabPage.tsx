@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'; // useRef 추가
-import { Trash2, Volume2 } from 'lucide-react';
+import { CirclePause, CirclePlay, Trash2} from 'lucide-react';
 import axios from 'axios';
 
 interface VocabItem {
@@ -20,18 +20,27 @@ export default function VocabPage({ onBack }: VocabPageProps) {
 
   // ✨ 1. 오디오 참조용 변수 추가
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playingWord, setPlayingWord] = useState<string | null>(null);
+
 
   // ✨ 2. 발음 재생 함수 (ResultCard와 동일하게 성별 인자 추가)
   const playAudio = async (text: string) => {
-    // 중복 재생 방지
+    // 1. 중복 재생 방지 및 기존 오디오 초기화
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
 
+    // 2. 현재 재생 중인 단어 상태 설정 (아이콘이 즉시 '정지'로 변함)
+    setPlayingWord(text);
+
     const audio = new Audio();
     audioRef.current = audio;
-    audio.play().catch(() => {});
+
+    // 3. 재생이 자연스럽게 끝나면 아이콘을 다시 '재생'으로 복구
+    audio.onended = () => {
+    if (playingWord === text) setPlayingWord(null);
+     };  // 현재 재생 중인 단어가 이 오디오와 일치할 때만 상태 초기화
 
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     const fallbackApiUrl = 'https://suny0731-hanyu-lens-fallback.hf.space';
@@ -39,16 +48,24 @@ export default function VocabPage({ onBack }: VocabPageProps) {
     try {
       const res = await axios.post(`${apiUrl}/speak`, { text: text, gender: 'female' }, {
         headers: { 'ngrok-skip-browser-warning': '69420' },
-        timeout: 3000
+        timeout: 1000
       });
+
+      // ✨응답이 왔을 때, 사용자가 그 사이에 다른 단어를 눌렀는지 확인
+      if (audioRef.current !== audio) return; 
+
       audio.src = `data:audio/mp3;base64,${res.data.audio}`;
-      audio.play();
+      await audio.play(); // 소리 재생 시작
+      
     } catch {
       try {
         const fallbackRes = await axios.post(`${fallbackApiUrl}/speak`, { text: text, gender: 'female' });
+        if (audioRef.current !== audio) return; // [보완]
+
         audio.src = `data:audio/mp3;base64,${fallbackRes.data.audio}`;
-        audio.play();
+        await audio.play();
       } catch (e) {
+        setPlayingWord(null);
         console.error("재생 실패:", e);
       }
     }
@@ -71,12 +88,22 @@ export default function VocabPage({ onBack }: VocabPageProps) {
           {words.map((item, i) => (
             <div key={i} className="bg-white p-4 rounded-2xl border border-jade-100 flex items-center shadow-sm hover:shadow-md transition-shadow">
               
-              {/* 스피커 버튼 */}
+             {/* 스피커/정지 통합 버튼 */}
               <button 
-                onClick={() => playAudio(item.word)} 
-                className="mr-4 text-jade-400 hover:text-jade-600 p-2 hover:bg-jade-50 rounded-full transition-colors cursor-pointer"
+                onClick={() => {
+                  if (playingWord === item.word) {
+                    // 현재 재생 중인 단어를 다시 누르면 정지
+                    audioRef.current?.pause();
+                    setPlayingWord(null);
+                  } else {
+                    // 다른 단어 재생
+                    playAudio(item.word);
+                  }
+                }} 
+                className={`mr-4 transition-all p-1 rounded-full cursor-pointer
+                  ${playingWord === item.word ? 'text-gray-400 hover:text-gray-500' : 'text-jade-500 hover:text-jade-700'}`}
               >
-                <Volume2 size={20} />
+                   {playingWord === item.word ? (<CirclePause size={24} /> ) : (<CirclePlay size={24} />)}
               </button>
 
               <div className="flex-1">

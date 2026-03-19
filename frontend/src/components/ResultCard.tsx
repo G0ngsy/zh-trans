@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import { RefreshCcw, MessageCircle, Lightbulb, Book, Volume2, Plus, VolumeX} from 'lucide-react';
+import { RefreshCcw, MessageCircle, Lightbulb, Book, Volume2, Plus,  CirclePause,CirclePlay} from 'lucide-react';
 
 interface ResultCardProps {
   imageUrl: string | null;
@@ -24,9 +24,10 @@ interface VocabItem {
 
 export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProps) {
   const [gender, setGender] = useState<'female' | 'male'>('female');
-  
-    // ✨ 1. 여기에 useRef를 반드시 먼저 선언하세요!
+  //  상태 추가
+  const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [activeSegment, setActiveSegment] = useState<string | null>(null);  //  현재 재생 중인 segment의 인덱스나 내용을 저장할 상태
 
   // ✨ 2. 컴포넌트가 화면에서 사라질 때(Unmount) 오디오 자동 정지
   useEffect(() => {
@@ -40,6 +41,17 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
   }, []);
   
 
+
+// 오디오가 끝났을 때 자동으로 버튼 원래대로 돌리기 
+useEffect(() => {
+  const audio = audioRef.current;
+  if (!audio) return;
+
+  const handleEnded = () => setIsPlaying(false);
+  audio.addEventListener('ended', handleEnded);
+  
+  return () => audio.removeEventListener('ended', handleEnded);
+}, []);
 
   // 단어 저장 함수
   const saveToVocab = (word: string, meaning: string,pinyin: string) => {
@@ -60,16 +72,22 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
   const playAudio = async (text: string, voiceGender: 'female' | 'male') => {
     // 1. 기존에 재생 중인 오디오가 있다면 멈춤
     if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
+  }
 
-    // 2. 새로운 오디오 객체 생성
-    const audio = new Audio();
-    audioRef.current = audio; // ✨ [추가] 새로 만든 객체를 ref에 저장!
+  // 2. 새로운 오디오 객체 생성 및 및 ref 업데이트
+  const audio = new Audio();
+  audioRef.current = audio;
 
-    // 브라우저 재생 권한 획득용 빈 재생
-    audio.play().catch(() => {});
+  // ✨ 통합된 onended 핸들러, 종료 시 상태 초기화
+  audio.onended = () => {
+    setIsPlaying(false);
+    setActiveSegment(null); // 재생 끝나면 강조 해제
+  };
+
+  // 3. 재생 시작을 알리는 상태 설정
+  setActiveSegment(text);   // 재생 강조 시작
 
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     const fallbackApiUrl = 'https://suny0731-hanyu-lens-fallback.hf.space';
@@ -80,20 +98,30 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
         gender: voiceGender 
       }, {
         headers: { 'ngrok-skip-browser-warning': '69420' },
-        timeout: 3000
+        timeout: 1000   //로컬 서버가 꺼져 있을 때 딱 1초만 기다리고 바로 다음 서버로 넘어감
       });
       console.log("서버가 보낸 데이터:", res.data);
+      // ✨서버 기다리는 동안 사용자가 다른 걸 클릭했는지 체크
+      if (audioRef.current !== audio) return;
+
       audio.src = `data:audio/mp3;base64,${res.data.audio}`;
-      audio.play();
+      await audio.play();
+      setIsPlaying(true); 
+      
     } catch {
       try {
         const fallbackRes = await axios.post(`${fallbackApiUrl}/speak`, { 
           text: text, 
           gender: voiceGender 
         });
+        if (audioRef.current !== audio) return;
+
         audio.src = `data:audio/mp3;base64,${fallbackRes.data.audio}`;
-        audio.play();
+        await audio.play();
+        setIsPlaying(true); 
+        
       } catch (fallbackError) {
+        setIsPlaying(false);
         console.error("단어 발음 재생 실패:", fallbackError);
         alert("발음 재생에 실패했습니다.");
       }
@@ -130,23 +158,32 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
           {/* 병음 & 스피커 */}
           <div className="flex gap-2 mb-3 ">
             <div className="flex items-center gap-2 ">
-           <button onClick={() => playAudio(result.original, gender)} className="text-jade-500 hover:text-jade-700 transition-colors cursor-pointer"><Volume2 size={24} /></button>
-          <button 
-            onClick={() => {
-              if (audioRef.current) {
-                audioRef.current.pause();
-                audioRef.current.currentTime = 0;
-              }
-            }}
-            className="bg-gray-100 p-2 rounded-full text-gray-500 hover:bg-gray-200 transition-all cursor-pointer">
-            <VolumeX size={18} fill="currentColor" />
-          </button>
+           <button 
+              onClick={() => {
+                if (isPlaying) {
+                  // 1. 재생 중이면 정지
+                  if (audioRef.current) {
+                    audioRef.current.pause();
+                    audioRef.current.currentTime = 0;
+                  }
+                  setIsPlaying(false);
+                  setActiveSegment(null);
+                } else {
+                  // 2. 멈춰있으면 재생 시작
+                  playAudio(result.original, gender);
+                }
+              }} 
+              className={`transition-colors cursor-pointer ${isPlaying ? 'text-gray-400 hover:text-gray-500' : 'text-jade-500 hover:text-jade-700'}`}
+            >
+              {isPlaying ? <CirclePause size={24} /> : <CirclePlay size={24} />}
+            </button>
+
           {/* [여성 버튼] */}
           <button 
             onClick={() => setGender('female')} 
             className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
               gender === 'female' 
-                ? 'bg-jade-500 text-white shadow-md' 
+                ? 'bg-jade-500 text-white shadow-md hover:bg-jade-700' 
                 : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
             }`}
           >
@@ -158,7 +195,7 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
             onClick={() => setGender('male')} 
             className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
               gender === 'male' 
-                ? 'bg-jade-500 text-white shadow-md' 
+                ? 'bg-jade-500 text-white shadow-md hover:bg-jade-700' 
                 : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
             }`}
           >
@@ -166,14 +203,18 @@ export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProp
           </button>
         </div>
       </div>
+
         <p className="text-orange-500 font-bold text-lg font-mono  break-all whitespace-pre-wrap">
           {result.pinyin.split('\n').map((line, lineIdx) => (
             <div key={lineIdx} className="mb-2"> {/* 각 줄을 div로 감싸서 줄바꿈 강제 */}
-              {line.replace(/([。！？，；、.,!?])\s*/g, '$1\n')
-          .split('\n').filter(Boolean).map((segment, segIdx) => (
+              {line.replace(/([。！？，；、.,!?])\s*/g, '$1\n').split('\n').filter(Boolean).map((segment, segIdx) => (
                 <span
                   key={segIdx}
-                  className="cursor-pointer hover:bg-jade-100 hover:rounded px-0.5 transition-all inline-block"
+                  className={`cursor-pointer transition-all inline-block px-0.5 rounded
+                          ${activeSegment === segment.trim() 
+                            ? 'bg-sunset-50 text-sunset-400 shadow-xs' // 재생 중이면 강조
+                            : 'hover:bg-sunset-50 hover:rounded'  // 아니면 호버 효과
+                          }`}
                   onClick={() => playAudio(segment.trim(), gender)} 
                 >
                   {segment}{' '}
