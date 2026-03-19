@@ -13,10 +13,9 @@ import ImageUploader from './components/ImageUploader';
 import SplashScreen from './components/SplashScreen';
 import VocabPage from './components/VocabPage';
 import RealtimeLens from './components/RealtimeLens';
-import TextInputPage from './components/TextInputPage';
 
 // 화면 상태 정의
-type ViewState = 'HOME' | 'CAMERA' | 'UPLOAD' | 'LOADING' | 'RESULT' | 'VOCAB' | 'REALTIME'| 'TEXT_INPUT';
+type ViewState = 'HOME' | 'CAMERA' | 'UPLOAD' | 'LOADING' | 'RESULT' | 'VOCAB' | 'REALTIME';
 
 
 // 1. 단어장 아이템 타입 정의 (이제 모든 파일에서 통일된 형식을 씀)
@@ -214,11 +213,9 @@ const analyzeText = async (text: string) => {
 
             {/* 단어장: 뒤로가기는 폰 버튼이 대신하므로 onBack은 goHome 혹은 간단히 처리 */}
             {view === 'VOCAB' && <VocabPage onBack={goHome} />}
-            {/* 텍스트 입력 화면 렌더링 */}
-            {view === 'TEXT_INPUT' && (<TextInputPage onAnalyze={analyzeText} />)}  
 
             {/* 뒤로가기 버튼 (UPLOAD 모드에서만 표시) */}
-            {(view === 'UPLOAD' || view === 'TEXT_INPUT') && (
+            {(view === 'UPLOAD' ) && (
               <div className="max-w-2xl mx-auto px-6 mt-4 mb-2">
                 <button 
                   onClick={goHome} 

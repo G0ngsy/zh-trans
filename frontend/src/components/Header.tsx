@@ -1,4 +1,4 @@
-import { Book } from 'lucide-react';
+import { NotebookPen } from 'lucide-react';
 interface HeaderProps {
   onLogoClick: () => void;
   onVocabClick: () => void;
@@ -23,7 +23,7 @@ export default function Header({ onLogoClick,onVocabClick }: HeaderProps) {
           onClick={onVocabClick}
           className="p-2.5 rounded-full bg-jade-50 text-jade-600 hover:bg-jade-100 transition-colors shadow-sm"
         >
-          <Book size={20} />
+          <NotebookPen size={20} />
         </button>
       </div>
     </header>

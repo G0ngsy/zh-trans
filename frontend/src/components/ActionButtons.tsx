@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Camera, ImageUp, ScanFace } from 'lucide-react';
+import { Camera, ImageUp, ScanSearch } from 'lucide-react';
 
 interface ActionButtonsProps {
   onCameraClick: () => void;
@@ -27,7 +27,7 @@ export default function ActionButtons({ onCameraClick, onUploadClick, onRealtime
             onClick={onRealtimeClick}
             className="flex items-center gap-1.5 text-[11px] font-black text-jade-600 bg-jade-50 px-3 py-1.5 rounded-full hover:bg-jade-100 transition-all"
           >
-            <ScanFace size={14} /> 실시간 AR 번역
+            <ScanSearch size={14} /> 실시간 AR 번역
           </button>
           <button 
             onClick={() => onTextAnalyze(inputText)}
