@@ -169,9 +169,8 @@ graph LR
 * **Concept**: 판다가 돋보기로 중국어를 탐구하는 생동감 넘치는 캐릭터 디자인.
 * **Animation**: 앱 시작 시 **Splash Screen**을 통해 학습의 즐거움을 시각적으로 표현.
 
-> ![Splash Preview] <img width="192" height="192" alt="panda02" src="https://github.com/user-attachments/assets/8cd6ec8a-cbe5-4bb2-bc81-95a8c8e02d43" />
-
-> *판다가 돋보기로 중국어를 탐구하는 애니메이션 스플래시 화면 예시*
+> <img width="192" height="192" alt="panda02" src="https://github.com/user-attachments/assets/8cd6ec8a-cbe5-4bb2-bc81-95a8c8e02d43" />
+<img width="499" height="901" alt="image" src="https://github.com/user-attachments/assets/79da1a4a-95f2-4bee-97cf-26b1bfbcb52d" />
 
 ---
 
