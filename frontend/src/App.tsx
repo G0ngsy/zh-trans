@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion'; 
 import pandaLoadingImg from './assets/panda01.png';
 import Header from './components/Header';
@@ -270,7 +270,23 @@ const analyzeText = async (text: string) => {
                   </div>
                   
                   {/* 2. 판다 주변을 빙글빙글 도는 로딩 스피너 */}
-                  <div className="absolute -inset-4 border-4 border-transparent border-t-jade-400 border-l-jade-400 rounded-full animate-spin opacity-40"></div>
+                  {/* 그라데이션 스피너 구현 (border 대신 svg 활용) */}
+                  <div className="absolute -inset-6 animate-spin opacity-60">
+                    <svg viewBox="0 0 100 100" className="w-full h-full">
+                      <defs><linearGradient id="spinner-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#34D399" stopOpacity="1" /> {/* jade-400 */}
+                          <stop offset="100%" stopColor="#34D399" stopOpacity="0" /> {/* 투명하게 사라짐 */}
+                        </linearGradient></defs>
+                      <circle 
+                        cx="50" cy="50" r="46" 
+                        stroke="url(#spinner-grad)" 
+                        strokeWidth="4" 
+                        fill="none" 
+                        strokeLinecap="round"
+                        strokeDasharray="200" 
+                      />
+                    </svg>
+                  </div>
                 </div>
 
                 {/* 3. 텍스트 정보 */}
