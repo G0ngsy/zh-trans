@@ -86,13 +86,13 @@
 
 ### **[Hybrid Server Architecture]**
 
-* ** Main Server (Local GPU)**
+* **Main Server (Local GPU)**
     * 개발자 로컬 PC의 **GPU 자원**을 직접 활용하여 고성능 AI 연산 수행.
     * 주요 엔진: `PaddleOCR`, `EXAONE 3.5 (via Ollama)`
-* ** Fallback Server (Cloud)**
+* **Fallback Server (Cloud)**
     * 메인 서버 장애 또는 로컬 PC 종료 시, **Hugging Face Spaces** 클라우드 서버로 자동 전환.
     * **24시간 중단 없는** 기본적인 텍스트 분석 및 번역 서비스 보장.
-* ** Networking & Security**
+* **Networking & Security**
     * **Ngrok** 고정 도메인 터널링을 통해 로컬 서버를 보안 프로토콜(`HTTPS`)로 외부 배포 환경과 안정적으로 연결.
 
 ```mermaid
