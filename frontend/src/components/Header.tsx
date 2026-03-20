@@ -21,7 +21,7 @@ export default function Header({ onLogoClick,onVocabClick }: HeaderProps) {
         {/* 오른쪽: 단어장 아이콘 */}
         <button 
           onClick={onVocabClick}
-          className="p-2.5 rounded-full bg-jade-50 text-jade-600 hover:bg-jade-100 transition-colors shadow-sm"
+          className="p-2.5 rounded-full bg-jade-50 text-jade-600 hover:bg-jade-100 transition-colors shadow-sm cursor-pointer"
         >
           <NotebookPen size={20} />
         </button>
