@@ -207,7 +207,7 @@ useEffect(() => {
         <p className="text-orange-500 font-bold text-lg font-mono  break-all whitespace-pre-wrap">
           {result.pinyin.split('\n').map((line, lineIdx) => (
             <div key={lineIdx} className="mb-2"> {/* 각 줄을 div로 감싸서 줄바꿈 강제 */}
-              {line.replace(/([。！？，；、.,!?])\s*/g, '$1\n').split('\n').filter(Boolean).map((segment, segIdx) => (
+              {line.replace(/([。！？，；、,!?])\s*/g, '$1\n').split('\n').filter(Boolean).map((segment, segIdx) => (
                 <span
                   key={segIdx}
                   className={`cursor-pointer transition-all inline-block px-0.5 rounded

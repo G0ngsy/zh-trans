@@ -36,6 +36,7 @@ google_translator = GoogleTranslator(source='zh-CN', target='ko')
 OLLAMA_API_URL = "http://localhost:11434/api/generate"
 MODEL_NAME = "exaone3.5:7.8b"
 
+
 def get_smart_word_list(text):
     """
     엑사원 AI에게 군더더기 없는 단어장 생성을 요청합니다.

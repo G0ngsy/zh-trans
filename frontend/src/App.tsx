@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion'; 
-
+import pandaLoadingImg from './assets/panda01.png';
 import Header from './components/Header';
 import HeroText from './components/HeroText';
 import ActionButtons from './components/ActionButtons';
@@ -43,10 +43,10 @@ function App() {
   
   // --- 0. 시작 화면 제어 로직 ---
   useEffect(() => {
-     // 2초 뒤에 시작 화면을 닫음
+     // 2.5초 뒤에 시작 화면을 닫음
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 2000);
+    }, 2500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -256,10 +256,29 @@ const analyzeText = async (text: string) => {
             )}
 
             {view === 'LOADING' && (
-              <div className="flex flex-col items-center justify-center pt-32 animate-fade-in">
-                <Loader2 className="w-16 h-16 text-jade-500 animate-spin mb-6" />
-                <h3 className="text-2xl font-bold text-gray-800">AI 분석 중...</h3>
-                <p className="text-gray-500 mt-2">잠시만 기다려주세요.</p>
+              <div className="flex flex-col items-center justify-center pt-24 animate-fade-in">
+                {/* 1. 판다 이미지를 상단에 배치 */}
+                <div className="relative mb-10">
+                  <div className="w-48 h-48 bg-white/50 rounded-full flex items-center justify-center backdrop-blur-sm shadow-xl shadow-jade-100 border-2 border-jade-100/50 relative overflow-hidden">
+                    <img 
+                      src={pandaLoadingImg} // 변수 이름을 그대로 넣습니다.
+                      width="160" 
+                      height="160" 
+                      alt="panda-loading" 
+                      className="object-contain"
+                    />
+                  </div>
+                  
+                  {/* 2. 판다 주변을 빙글빙글 도는 로딩 스피너 */}
+                  <div className="absolute -inset-4 border-4 border-transparent border-t-jade-400 border-l-jade-400 rounded-full animate-spin opacity-40"></div>
+                </div>
+
+                {/* 3. 텍스트 정보 */}
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-black text-gray-800 tracking-tight">AI 분석 중...</h3>
+                  <p className="text-gray-500 font-medium">판다가 한자를 열심히 읽고 있어요!</p>
+                </div>
+
               </div>
             )}
 
