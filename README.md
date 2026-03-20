@@ -1,11 +1,14 @@
 # 🐼 Hanyu-Lens (한어 렌즈) 🔍
 
-> **실시간 AR 기반 중어중문학습 보조 플랫폼** > 고성능 AI 모델을 활용하여 복잡한 레이아웃 속 한자를 정밀하게 분석하고 학습합니다.
+**단순 번역을 넘어선 실시간 AR 기반 중어중문 학습 보조 플랫폼** 
+>사진 속 문법 단위를 분석하고, 성조 발음 청취 및 단어 저장을 지원하는 개인화 학습 가이드입니다.
 
 ---
 
 ## 📝 프로젝트 개요 (Project Overview)
+**"번역을 넘어 학습으로 (Beyond Translation to Learning)"**
 
+> 기존의 번역기들은 중국어 문장을 통째로 의역하여, 학습자가 단어 본연의 뜻과 문법 구조를 파악하기 어렵게 만듭니다. **Hanyu-Lens**는 이러한 페인 포인트(Pain Point)를 해결하기 위해 **'의미 단위 분석'** 과 **'학습 루프'** 구축에 집중합니다.
 ---
 
 ## 🚀 주요 기능 (Core Features)
@@ -63,13 +66,13 @@
 
 ### **[Hybrid Server Architecture]**
 
-* **🚀 Main Server (Local GPU)**
+* ** Main Server (Local GPU)**
     * 개발자 로컬 PC의 **GPU 자원**을 직접 활용하여 고성능 AI 연산 수행.
     * 주요 엔진: `PaddleOCR`, `EXAONE 3.5 (via Ollama)`
-* **☁️ Fallback Server (Cloud)**
+* ** Fallback Server (Cloud)**
     * 메인 서버 장애 또는 로컬 PC 종료 시, **Hugging Face Spaces** 클라우드 서버로 자동 전환.
     * **24시간 중단 없는** 기본적인 텍스트 분석 및 번역 서비스 보장.
-* **🌐 Networking & Security**
+* ** Networking & Security**
     * **Ngrok** 고정 도메인 터널링을 통해 로컬 서버를 보안 프로토콜(`HTTPS`)로 외부 배포 환경과 안정적으로 연결.
 
 ```mermaid
