@@ -169,8 +169,7 @@ graph LR
 * **Concept**: 판다가 돋보기로 중국어를 탐구하는 생동감 넘치는 캐릭터 디자인.
 * **Animation**: 앱 시작 시 **Splash Screen**을 통해 학습의 즐거움을 시각적으로 표현.
 
-> <img width="192" height="192" alt="panda02" src="https://github.com/user-attachments/assets/8cd6ec8a-cbe5-4bb2-bc81-95a8c8e02d43" />
-
+<img src="./frontend/src/assets/panda01.png" width="200" alt="Hanyu-Lens Mascot">
 ---
 
 ### 🏃 실행 방법 (Getting Started)
