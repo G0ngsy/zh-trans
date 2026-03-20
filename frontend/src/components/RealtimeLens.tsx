@@ -114,7 +114,7 @@ export default function RealtimeLens({ onClose }: RealtimeLensProps) {
 
    return (
     <div ref={containerRef} className="fixed inset-0 bg-black z-50 select-none">
-      <button onClick={onClose} className="absolute top-4 right-4 z-50 p-2 bg-black/40 text-white rounded-full">
+      <button onClick={onClose} className="absolute top-4 right-4 z-50 p-2 bg-black/40 text-white rounded-full cursor-pointer">
         <X size={24} />
       </button>
       
@@ -130,8 +130,9 @@ export default function RealtimeLens({ onClose }: RealtimeLensProps) {
         style={{ top: box.top, left: box.left, width: box.width, height: box.height }} 
         className="absolute border-2 border-jade-400 z-40 bg-white/5 shadow-[0_0_0_9999px_rgba(0,0,0,0.6)]"
       >
+        {/* 중앙 이동 핸들 */}
         <div onMouseDown={handleStart('move')} onTouchStart={handleStart('move')} className="absolute inset-0 cursor-move"></div>
-        <div onMouseDown={handleStart('br')} onTouchStart={handleStart('br')} className="absolute -right-2 -bottom-2 w-8 h-8 bg-jade-400 rounded-full cursor-se-resize"></div>
+        <div onMouseDown={handleStart('br')} onTouchStart={handleStart('br')} className="absolute -bottom-1.5 -right-1.5 w-10 h-10 border-b-4 border-r-4 border-jade-400 cursor-se-resize"></div>
       </div>
 
       {/* ✨ [신규] 박스 하단 자막 영역 (병음 표시) */}

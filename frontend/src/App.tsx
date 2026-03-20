@@ -219,7 +219,7 @@ const analyzeText = async (text: string) => {
               <div className="max-w-2xl mx-auto px-6 mt-4 mb-2">
                 <button 
                   onClick={goHome} 
-                  className="flex items-center text-gray-500 hover:text-jade-600 font-bold transition-colors"
+                  className="flex items-center text-gray-500 hover:text-jade-600 font-bold transition-colors cursor-pointer"
                 >
                   <ArrowLeft size={20} className="mr-1"/> 처음으로
                 </button>

@@ -130,7 +130,7 @@ export default function CameraCapture({ onCapture, onClose }: CameraCaptureProps
       
       {/* 닫기 버튼 */}
       <div className="absolute top-4 right-4 z-50">
-        <button onClick={onClose} className="p-2 bg-black/40 text-white rounded-full backdrop-blur-md"><X size={24} /></button>
+        <button onClick={onClose} className="p-2 bg-black/40 text-white rounded-full backdrop-blur-md cursor-pointer"><X size={24} /></button>
       </div>
 
       <div className="flex-1 relative bg-black min-h-0">
@@ -168,24 +168,24 @@ export default function CameraCapture({ onCapture, onClose }: CameraCaptureProps
             </div>
           </>
         ) : (
-          <div className="w-full h-full flex items-center justify-center p-6 bg-neutral-900">
-            <img src={imgSrc} alt="Cropped" className="max-w-full max-h-[70dvh] rounded-2xl border-4 border-jade-400 shadow-2xl animate-fade-in" />
+          <div className="w-full h-full flex items-center justify-center p-6 bg-neutral-900 ">
+            <img src={imgSrc} alt="Cropped" className="max-w-full max-h-[70dvh] rounded-2xl border-4 border-jade-400 shadow-2xl animate-fade-in " />
           </div>
         )}
       </div>
 
       {/* 하단 버튼 섹션 */}
-      <div className="flex-shrink-0 bg-neutral-950 p-8 flex flex-col items-center justify-center pb-12 sm:pb-16 z-50">
+      <div className="flex-shrink-0 bg-neutral-950 p-8 flex flex-col items-center justify-center pb-12 sm:pb-16 z-50 ">
         {!imgSrc ? (
-          <button onClick={captureAndCrop} className="w-18 h-18 bg-white rounded-full border-4 border-jade-500 shadow-2xl active:scale-90 transition-transform flex items-center justify-center">
+          <button onClick={captureAndCrop} className="w-18 h-18 bg-white rounded-full border-4 border-jade-500 shadow-2xl active:scale-90 transition-transform flex items-center justify-center cursor-pointer">
             <div className="w-14 h-14 bg-white border border-black/10 rounded-full"></div>
           </button>
         ) : (
           <div className="flex flex-col gap-3 w-full max-w-xs animate-slide-up">
-            <button onClick={() => { fetch(imgSrc).then(r=>r.blob()).then(b => onCapture(new File([b],"c.jpg",{type:"image/jpeg"}), imgSrc)); }} className="py-4.5 bg-jade-500 text-white rounded-2xl font-black text-lg shadow-xl shadow-jade-500/20 active:bg-jade-600 transition-colors flex items-center justify-center gap-2">
+            <button onClick={() => { fetch(imgSrc).then(r=>r.blob()).then(b => onCapture(new File([b],"c.jpg",{type:"image/jpeg"}), imgSrc)); }} className="py-4.5 bg-jade-500 hover:bg-jade-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-jade-500/20 active:bg-jade-600 transition-colors flex items-center justify-center gap-2 cursor-pointer">
               <Check size={22} /> 이 영역 분석하기
             </button>
-            <button onClick={() => setImgSrc(null)} className="py-3 bg-white/10 text-white/50 rounded-2xl font-bold text-sm flex items-center justify-center gap-2">
+            <button onClick={() => setImgSrc(null)} className="py-3 bg-white/10 text-white/50 hover:bg-white/15 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer">
               <RefreshCcw size={16} /> 다시 찍기
             </button>
           </div>
