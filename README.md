@@ -170,6 +170,7 @@ graph LR
 * **Animation**: 앱 시작 시 **Splash Screen**을 통해 학습의 즐거움을 시각적으로 표현.
 
 <img src="./frontend/src/assets/panda01.png" width="200" alt="Hanyu-Lens Mascot">
+
 ---
 
 ### 🏃 실행 방법 (Getting Started)
