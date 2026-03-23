@@ -154,7 +154,9 @@ graph LR
 
 ## 📸 주요 화면 미리보기
 * **Intro**
-<img src="./frontend/src/assets/Intro.gif" width="200" alt="Hanyu-Lens App Demo">
+<div align="center">
+  <img src="frontend/src/assets/Intro.gif" width="35%" />
+</div>
 
 ---
 
