@@ -153,10 +153,18 @@ graph LR
 ---
 
 ## 📸 주요 화면 미리보기
-* **Intro**
-<div align="center">
-  <img src="frontend/src/assets/Intro.gif" width="35%" />
-</div>
+| 🎬 인트로 화면 | 📝 텍스트 구조 분석 | 🔊 단어장 & TTS |
+| :---: | :---: | :---: |
+| <img src="./frontend/src/assets/Intro.gif" width="200" /> | <img src="./frontend/src/assets/text.gif" width="200" /> | <img src="./frontend/src/assets/wordlistTTS.gif" width="200" /> |
+| **스플래시 애니메이션** | **문법 단위 해독** | **발음 청취 및 저장** |
+
+
+| 🔍 실시간 AR 렌즈 | 📸 카메라 촬영 분석 | 📤 이미지 업로드 |
+| :---: | :---: | :---: |
+| <img src="./frontend/src/assets/realtime.gif" width="200" /> | <img src="./frontend/src/assets/camera.gif" width="200" /> | <img src="./frontend/src/assets/imageupload.gif" width="200" /> |
+| **병음 및 성조 표시** | **정밀 텍스트 스캔** | **갤러리 이미지 분석** |
+
+
 
 ---
 
