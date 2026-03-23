@@ -152,11 +152,9 @@ graph LR
  
 ---
 
-### 📸 주요 화면 미리보기
-
-| 시작 화면 | 실시간 AR 번역 | 분석 결과 |
-| :---: | :---: | :---: |
-| <img src="frontend\src\assets\Intro.mp4" width="200"/> | <img src="주소2" width="200"/> | <img src="주소3" width="200"/> |
+## 📸 주요 화면 미리보기
+* **Intro**
+<img src="./frontend/src/assets/Intro.gif" width="200" alt="Hanyu-Lens App Demo">
 
 ---
 
