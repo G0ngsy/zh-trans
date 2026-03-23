@@ -223,7 +223,7 @@ graph LR
 
 ---
 
-### 🏃 실행 방법 (Getting Started)
+## 🏃 실행 방법 (Getting Started)
 ### 1. Backend (Python)
 ```bash
 # 가상환경 활성화 후 라이브러리 설치
