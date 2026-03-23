@@ -152,8 +152,11 @@ graph LR
  
 ---
 
-### 📸 스크린샷 (Screenshots)
-(여기에 시작 화면, 분석 결과, 단어장, 실시간 모드 사진들을 예쁘게 넣어주세요!)
+### 📸 주요 화면 미리보기
+
+| 시작 화면 | 실시간 AR 번역 | 분석 결과 |
+| :---: | :---: | :---: |
+| <img src="./frontend/src/assets/Intro.mp4" width="200"/> | <img src="주소2" width="200"/> | <img src="주소3" width="200"/> |
 
 ---
 
