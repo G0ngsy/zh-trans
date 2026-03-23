@@ -165,10 +165,8 @@ graph LR
 * **Tone & Manner**: 깨끗하고 신뢰감 있는 학습 환경을 상징하는 **Jade (비취색)** 컬러를 메인 스택으로 사용.
 * **UI/UX**: 미니멀한 레이아웃에 **Framer Motion**을 결합하여 부드러운 인터랙션 제공.
 
-### **[Mascot & Splash Screen]**
+### **[Mascot]**
 * **Concept**: 판다가 돋보기로 중국어를 탐구하는 생동감 넘치는 캐릭터 디자인.
-* **Animation**: 앱 시작 시 **Splash Screen**을 통해 학습의 즐거움을 시각적으로 표현.
-
 <img src="./frontend/src/assets/panda01.png" width="200" alt="Hanyu-Lens Mascot">
 
 ---
