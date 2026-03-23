@@ -149,22 +149,49 @@ graph LR
 * **Solution:** **선제적 권한 확보 전략** 사용. 
     * 버튼 클릭 이벤트 즉시 빈 오디오 객체를 먼저 실행하여 브라우저의 재생 권한을 선점.
     * 서버 데이터(TTS)가 도착하면 `src`만 교체하여 끊김 없는 사용자 경험 제공.
- 
+
 ---
 
 ## 📸 주요 화면 미리보기
-| 🎬 인트로 화면 | 📝 텍스트 구조 분석 | 🔊 단어장 & TTS |
-| :---: | :---: | :---: |
-| <img src="./frontend/src/assets/Intro.gif" width="200" /> | <img src="./frontend/src/assets/text.gif" width="200" /> | <img src="./frontend/src/assets/wordlistTTS.gif" width="200" /> |
-| **스플래시 애니메이션** | **문법 단위 해독** | **발음 청취 및 저장** |
 
-
-| 🔍 실시간 AR 렌즈 | 📸 카메라 촬영 분석 | 📤 이미지 업로드 |
-| :---: | :---: | :---: |
-| <img src="./frontend/src/assets/realtime.gif" width="200" /> | <img src="./frontend/src/assets/camera.gif" width="200" /> | <img src="./frontend/src/assets/imageupload.gif" width="200" /> |
-| **병음 및 성조 표시** | **정밀 텍스트 스캔** | **갤러리 이미지 분석** |
-
-
+<div align="center">
+  <br />
+  <table style="border: none; border-collapse: collapse;">
+    <tr style="border: none;">
+      <td align="center" style="border: none; width: 33%;"><b>🎬 인트로 화면</b></td>
+      <td align="center" style="border: none; width: 33%;"><b>📝 텍스트 구조 분석</b></td>
+      <td align="center" style="border: none; width: 33%;"><b>🔊 단어장 & TTS</b></td>
+    </tr>
+    <tr style="border: none;">
+      <td align="center" style="border: none;"><img src="./frontend/src/assets/Intro.gif" width="220" /></td>
+      <td align="center" style="border: none;"><img src="./frontend/src/assets/text.gif" width="220" /></td>
+      <td align="center" style="border: none;"><img src="./frontend/src/assets/wordlistTTS.gif" width="220" /></td>
+    </tr>
+    <tr style="border: none;">
+      <td align="center" style="border: none;"><sub>판다와 함께 시작하는<br>학습 스플래시</sub></td>
+      <td align="center" style="border: none;"><sub>문법 단위별 해독 및<br>품사 정보 제공</sub></td>
+      <td align="center" style="border: none;"><sub>원어민 발음 청취 및<br>개인 단어장 저장</sub></td>
+    </tr>
+  </table>
+  <br /><br />
+  <table style="border: none; border-collapse: collapse;">
+    <tr style="border: none;">
+      <td align="center" style="border: none; width: 33%;"><b>🔍 실시간 AR 렌즈</b></td>
+      <td align="center" style="border: none; width: 33%;"><b>📸 카메라 촬영 분석</b></td>
+      <td align="center" style="border: none; width: 33%;"><b>📤 이미지 업로드</b></td>
+    </tr>
+    <tr style="border: none;">
+      <td align="center" style="border: none;"><img src="./frontend/src/assets/realtime.gif" width="220" /></td>
+      <td align="center" style="border: none;"><img src="./frontend/src/assets/camera.gif" width="220" /></td>
+      <td align="center" style="border: none;"><img src="./frontend/src/assets/imageupload.gif" width="220" /></td>
+    </tr>
+    <tr style="border: none;">
+      <td align="center" style="border: none;"><sub>비추는 즉시 나타나는<br>성조와 병음 가이드</sub></td>
+      <td align="center" style="border: none;"><sub>원하는 영역만 잘라내는<br>정밀 스캔 기능</sub></td>
+      <td align="center" style="border: none;"><sub>갤러리에 저장된 이미지의<br>한자 분석 및 번역</sub></td>
+    </tr>
+  </table>
+</div>
 
 ---
 
