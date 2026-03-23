@@ -173,36 +173,36 @@ graph LR
   <table style="border: none; border-collapse: collapse;">
     <tr style="border: none;">
       <td align="center" style="border: none; width: 33%;"><b>🎬 인트로 화면</b></td>
-      <td align="center" style="border: none; width: 33%;"><b>📝 텍스트 구조 분석</b></td>
-      <td align="center" style="border: none; width: 33%;"><b>🔊 단어장 & TTS</b></td>
+      <td align="center" style="border: none; width: 33%;"><b>🔍 실시간 AR 렌즈</b></td>
+      <td align="center" style="border: none; width: 33%;"><b>📸 카메라 촬영 분석</b></td>
     </tr>
     <tr style="border: none;">
       <td align="center" style="border: none;"><img src="./frontend/src/assets/Intro.gif" width="220" /></td>
-      <td align="center" style="border: none;"><img src="./frontend/src/assets/text.gif" width="220" /></td>
-      <td align="center" style="border: none;"><img src="./frontend/src/assets/wordlistTTS.gif" width="220" /></td>
+      <td align="center" style="border: none;"><img src="./frontend/src/assets/realtime.gif" width="220" /></td>
+      <td align="center" style="border: none;"><img src="./frontend/src/assets/camera.gif" width="220" /></td>
     </tr>
     <tr style="border: none;">
       <td align="center" style="border: none;"><sub>판다와 함께 시작하는<br>학습 스플래시</sub></td>
-      <td align="center" style="border: none;"><sub>문법 단위별 해독 및<br>품사 정보 제공</sub></td>
-      <td align="center" style="border: none;"><sub>원어민 발음 청취 및<br>개인 단어장 저장</sub></td>
+      <td align="center" style="border: none;"><sub>비추는 즉시 나타나는<br>성조와 병음 가이드</sub></td>
+      <td align="center" style="border: none;"><sub>원하는 영역만 잘라내는<br>정밀 스캔 기능</sub></td>      
     </tr>
   </table>
   <br /><br />
   <table style="border: none; border-collapse: collapse;">
     <tr style="border: none;">
-      <td align="center" style="border: none; width: 33%;"><b>🔍 실시간 AR 렌즈</b></td>
-      <td align="center" style="border: none; width: 33%;"><b>📸 카메라 촬영 분석</b></td>
       <td align="center" style="border: none; width: 33%;"><b>📤 이미지 업로드</b></td>
+      <td align="center" style="border: none; width: 33%;"><b>📝 텍스트 구조 분석</b></td>
+      <td align="center" style="border: none; width: 33%;"><b>🔊 단어장 & TTS</b></td>      
     </tr>
     <tr style="border: none;">
-      <td align="center" style="border: none;"><img src="./frontend/src/assets/realtime.gif" width="220" /></td>
-      <td align="center" style="border: none;"><img src="./frontend/src/assets/camera.gif" width="220" /></td>
       <td align="center" style="border: none;"><img src="./frontend/src/assets/imageupload.gif" width="220" /></td>
+      <td align="center" style="border: none;"><img src="./frontend/src/assets/text.gif" width="220" /></td>
+      <td align="center" style="border: none;"><img src="./frontend/src/assets/wordlistTTS.gif" width="220" /></td>
     </tr>
     <tr style="border: none;">
-      <td align="center" style="border: none;"><sub>비추는 즉시 나타나는<br>성조와 병음 가이드</sub></td>
-      <td align="center" style="border: none;"><sub>원하는 영역만 잘라내는<br>정밀 스캔 기능</sub></td>
       <td align="center" style="border: none;"><sub>갤러리에 저장된 이미지의<br>한자 분석 및 번역</sub></td>
+      <td align="center" style="border: none;"><sub>문법 단위별 해독 및<br>품사 정보 제공</sub></td>
+      <td align="center" style="border: none;"><sub>원어민 발음 청취 및<br>개인 단어장 저장</sub></td>
     </tr>
   </table>
 </div>
