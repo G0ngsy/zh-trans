@@ -224,13 +224,24 @@ graph LR
 ---
 
 ## 🏃 실행 방법 (Getting Started)
+### ⚙️ 사전 준비 (Prerequisites)
+* Python 3.10+ 및 Node.js 설치 필수
+* Ollama 설치 및 실행 (로컬 LLM 구동용)
+
 ### 1. Backend (Python)
 ```bash
 # 가상환경 활성화 후 라이브러리 설치
 cd backend
+
+# 가상환경 생성 및 활성화
+python -m venv venv
+source venv/Scripts/activate  # Windows (Git Bash)
+# source venv/bin/activate    # Mac/Linux
+
+# 필수 라이브러리 설치
 pip install -r requirements.txt
 
-# 로컬 AI 서버 실행 (Ollama 필수)
+# 로컬 AI 모델 다운로드 및 실행 (Ollama 필수)
 ollama run exaone3.5:7.8b
 
 # 백엔드 API 실행
@@ -244,7 +255,11 @@ ngrok http --domain=your-domain.ngrok-free.dev 8000
 cd frontend
 npm install
 
-# .env 파일 생성 및 VITE_API_URL 설정 후 실행
+# .env 파일 생성 (프로젝트 루트 디렉토리)
+# VITE_API_URL=사용자_서버_주소 (예: http://localhost:8000)
+echo "VITE_API_URL=http://localhost:8000" > .env
+
+# 개발 서버 실행
 npm run dev
 ```
 
