@@ -42,8 +42,9 @@
 * **EXAONE (LLM)**: 단순 번역이 아닌 문법적 단위(양사, 보어 등)를 쪼개어 단어장 형태로 풀이.
 
 ### **원어민 발음 청취 (AI TTS System)**
-* **남성/여성 목소리 선택** 기능 및 문장/단어별 개별 청취 지원.
-* **edge-tts** 기반의 고품질 자연어 음성 합성.
+* **성별 선택 기능**: 여성(밝은 톤) 및 남성(차분한 저음) 목소리 선택 지원.
+* **인터랙티브 리딩**: 문장 전체 및 단어별 개별 청취 기능을 통한 쉐도잉 학습 지원
+* **Edge-TTS**: 마이크로소프트의 고품질 음성 합성 엔진을 활용한 자연스러운 발음 구현.
 
 ### **나만의 단어장 (Smart Vocabulary)**
 * 분석된 단어를 **클릭 한 번**으로 `localStorage`에 저장 및 관리.
@@ -60,10 +61,13 @@
 
 | 단계 | 도구 (Library) | 역할 및 결과물 |
 | :--- | :--- | :--- |
+| **레이아웃 복원** | `Coordinate Logic` | OCR 좌표 데이터를 분석하여 원본의 줄바꿈 및 표 형식을 100% 복원 |
 | **병음 생성** | `pypinyin` | PaddleOCR이 읽어온 한자를 기반으로 **병음(Pinyin) + 성조** 자동 생성 |
 | **한국식 독음** | `hanja` | 한자 원문을 한국인 학습자에게 익숙한 **한국식 한자 독음**으로 변환 |
 | **형태소 분석** | `jieba` | 문장을 단어 단위로 정밀하게 쪼개어 **의미 단위 분석** 및 단어장 생성 |
 | **지능형 번역** | `Google Translator` | 쪼개진 단어들(`word_list`)과 전체 문장을 학습 맥락에 맞게 **한국어 번역** |
+| **데이터 정제** | `Regex (re)` | 한자가 포함되지 않은 숫자, 기호, 영문 단위를 필터링하여 단어장 무결성 확보 |
+
 
 ---
 
@@ -87,8 +91,8 @@
 | 구분 | 기술 / 라이브러리 |
 | :--- | :--- |
 | **Frontend** | React, TypeScript, Tailwind CSS, Vite, Framer Motion |
-| **Backend** | Python, FastAPI, Uvicorn |
-| **OCR / AI** | PaddleOCR, EXAONE 3.5 (Ollama), Google Translator |
+| **Backend** | Python, FastAPI, Uvicorn, requests (API 통신) |
+| **OCR / AI** | PaddleOCR, EXAONE 3.5 (Ollama), Google Translator, Edge-TTS |
 | **NLP** | jieba (형태소 분석), hanja (한국식 독음), pypinyin |
 | **Infrastructure** | Vercel, Hugging Face Spaces (Fallback), Ngrok |
 
