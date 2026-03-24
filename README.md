@@ -9,7 +9,7 @@
 ---
 
 ## 📝 프로젝트 개요 (Project Overview)
-**"번역을 넘어 학습으로 (Beyond Translation to Learning)"**
+***"번역을 넘어 학습으로 (Beyond Translation to Learning)"***
 
 > 기존의 번역기들은 중국어 문장을 통째로 의역하여, 학습자가 단어 본연의 뜻과 문법 구조를 파악하기 어렵게 만듭니다. **Hanyu-Lens**는 이러한 페인 포인트(Pain Point)를 해결하기 위해 **'의미 단위 분석'** 과 **'학습 루프'** 구축에 집중합니다.
 
@@ -126,8 +126,8 @@ graph LR
     style Local fill:#f96,stroke:#333,stroke-width:2px
     style HF fill:#69f,stroke:#333,stroke-width:2px
 ```
-> **Architecture Flow:**
-> Client (Vercel) ↔️ Ngrok Tunnel ↔️ Local Server (Primary) / Hugging Face (Secondary)
+> ***Architecture Flow:***
+> ___Client (Vercel) ↔️ Ngrok Tunnel ↔️ Local Server (Primary) / Hugging Face (Secondary)___
 
 ---
 
