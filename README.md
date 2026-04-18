@@ -96,7 +96,7 @@
 | **Backend** | Python, FastAPI, Uvicorn, requests (API 통신) |
 | **OCR / AI** | PaddleOCR, EXAONE 3.5 (Ollama), Google Translator, Edge-TTS |
 | **NLP** | jieba (형태소 분석), hanja (한국식 독음), pypinyin |
-| **Infrastructure** | Vercel, Hugging Face Spaces (Fallback), Ngrok |
+| **Infrastructure** | Vercel, Hugging Face Spaces (Fallback), Ngrok, **UptimeRobot** |
 
 ---
 
@@ -112,22 +112,27 @@
 * **Fallback Server (Cloud)**
     * 메인 서버 장애 또는 로컬 PC 종료 시, **Hugging Face Spaces** 클라우드 서버로 자동 전환.
     * **24시간 중단 없는** 기본적인 텍스트 분석 및 번역 서비스 보장.
+* **Sleep 방지 (UptimeRobot)**
+    * Hugging Face Spaces는 일정 시간 요청이 없으면 **슬립 모드**로 전환되어 첫 응답 시 수십 초 지연 발생.
+    * **UptimeRobot**이 5분 주기로 자동 ping을 전송하여 Fallback 서버를 **상시 활성 상태**로 유지.
 * **Networking & Security**
     * **Ngrok** 고정 도메인 터널링을 통해 로컬 서버를 보안 프로토콜(`HTTPS`)로 외부 배포 환경과 안정적으로 연결.
 
 ```mermaid
 graph LR
+    UptimeRobot((UptimeRobot)) -- ping every 5min --> HF
     User((User)) --> Vercel[Vercel Frontend]
     Vercel --> LB{Traffic Control}
     LB -- Primary --> Ngrok[Ngrok Tunnel]
     Ngrok --> Local[Local GPU Server: PaddleOCR/EXAONE]
     LB -- Fallback --> HF[Hugging Face Spaces: Light OCR/Translation]
-
+ 
     style Local fill:#f96,stroke:#333,stroke-width:2px
     style HF fill:#69f,stroke:#333,stroke-width:2px
+    style UptimeRobot fill:#2ecc71,stroke:#333,stroke-width:2px
 ```
 > ***Architecture Flow:***
-> ___Client (Vercel) ↔️ Ngrok Tunnel ↔️ Local Server (Primary) / Hugging Face (Secondary)___
+> ___Client (Vercel) ↔️ Ngrok Tunnel ↔️ Local Server (Primary) / Hugging Face (Secondary, kept alive by UptimeRobot)___
 
 ---
 
@@ -154,17 +159,24 @@ graph LR
     Compare -->|Match| Group[Same Row]
     Group --> Sort[X-axis Sorting]
 ```
+
 ### 2. 하이브리드 서버 및 자동 장애 복구(Failover) 시스템 구축
 * **Problem:** 로컬 GPU 서버(내 PC)가 꺼지면 서비스가 중단되는 단일 장애점(SPOF) 발생.
 * **Solution:** **Ngrok** 기반의 메인 서버와 **Hugging Face** 클라우드 기반의 비상 서버를 이중화 처리. 
     * 프론트엔드에서 메인 서버 응답이 없으면 자동으로 클라우드 API로 요청을 우회(**Fallback**)하여 24시간 가용성 확보.
 
-### 3. 라이브러리 의존성 및 버전 지옥(Dependency Hell) 해결
+### 3. Hugging Face Spaces 슬립 모드 방지 (UptimeRobot)
+* **Problem:** Hugging Face Spaces는 일정 시간 요청이 없으면 **슬립 모드**로 전환되어, Fallback 서버임에도 불구하고 첫 요청 시 수십 초의 **콜드 스타트(Cold Start)** 지연이 발생.
+* **Solution:** **UptimeRobot**을 활용하여 5분 주기로 Hugging Face Spaces 엔드포인트에 자동 ping을 전송.
+    * Fallback 서버를 항상 깨어있는 상태로 유지하여 콜드 스타트 문제를 원천 차단.
+    * 메인 서버 장애 시 사용자가 지연 없이 즉시 Fallback 서버로 전환되는 경험 보장.
+
+### 4. 라이브러리 의존성 및 버전 지옥(Dependency Hell) 해결
 * **Problem:** 최신 `NumPy 2.0`, `OpenCV 4.13`, `PaddlePaddle 3.0` 간의 ABI 호환성 에러 및 PIR 엔진 버그 발생.
 * **Solution:** 무조건 최신 버전을 쓰기보다 서비스 안정성을 최우선으로 고려. 
     * 직접 테스트를 통해 검증된 **안정화 버전 조합(`Paddle 2.6.2` + `Numpy 1.26.4` + `OpenCV 4.6.0`)**으로 최적의 빌드 환경 구축.
 
-### 4. 모바일 브라우저 오디오 보안 정책(Autoplay Policy) 우회
+### 5. 모바일 브라우저 오디오 보안 정책(Autoplay Policy) 우회
 * **Problem:** 비동기 API 요청 후 실행되는 `Audio.play()`가 브라우저에 의해 '사용자 의도 없음'으로 간주되어 차단됨.
 * **Solution:** **선제적 권한 확보 전략** 사용. 
     * 버튼 클릭 이벤트 즉시 빈 오디오 객체를 먼저 실행하여 브라우저의 재생 권한을 선점.
@@ -233,41 +245,50 @@ graph LR
 ### ⚙️ 사전 준비 (Prerequisites)
 * Python 3.10+ 및 Node.js 설치 필수
 * Ollama 설치 및 실행 (로컬 LLM 구동용)
-
 ### 1. Backend (Python)
 ```bash
 # 가상환경 활성화 후 라이브러리 설치
 cd backend
-
+ 
 # 가상환경 생성 및 활성화
 python -m venv venv
 source venv/Scripts/activate  # Windows (Git Bash)
 # source venv/bin/activate    # Mac/Linux
-
+ 
 # 필수 라이브러리 설치
 pip install -r requirements.txt
-
+ 
 # 로컬 AI 모델 다운로드 및 실행 (Ollama 필수)
 ollama run exaone3.5:7.8b
-
+ 
 # 백엔드 API 실행
 uvicorn main:app --reload --port 8000
-
+ 
 # 외부 노출을 위한 Ngrok 실행
 ngrok http --domain=your-domain.ngrok-free.dev 8000
 ```
+ 
 ### 2. Frontend (React)
 ```bash
 cd frontend
 npm install
-
+ 
 # .env 파일 생성 (프로젝트 루트 디렉토리)
 # VITE_API_URL=사용자_서버_주소 (예: http://localhost:8000)
 echo "VITE_API_URL=http://localhost:8000" > .env
-
+ 
 # 개발 서버 실행
 npm run dev
 ```
-
-
-
+ 
+### 3. UptimeRobot 설정 (Fallback 서버 슬립 방지)
+```
+1. https://uptimerobot.com 접속 후 무료 계정 생성
+2. [Add New Monitor] 클릭
+3. Monitor Type: HTTP(s) 선택
+4. URL: Hugging Face Spaces 엔드포인트 주소 입력
+5. Monitoring Interval: 5 minutes 설정
+6. [Create Monitor] 클릭
+```
+> ⚠️ Hugging Face Spaces URL 형식: `https://suny0731-hanyu-lens-fallback.hf.space`
+ 
