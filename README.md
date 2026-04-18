@@ -290,5 +290,5 @@ npm run dev
 5. Monitoring Interval: 5 minutes 설정
 6. [Create Monitor] 클릭
 ```
-> ⚠️ Hugging Face Spaces URL 형식: `https://suny0731-hanyu-lens-fallback.hf.space`
+> 📌 Hugging Face Spaces URL 형식: `https://suny0731-hanyu-lens-fallback.hf.space`
  
