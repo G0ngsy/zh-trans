@@ -1,6 +1,6 @@
 # 🐼 Hanyu-Lens (한어 렌즈) 🔍
 
-**단순 번역을 넘어선 실시간 AR 기반 중어중문 학습 보조 플랫폼** 
+**단순 번역을 넘어선 실시간 AR 기반 중국어 학습 보조 플랫폼** 
 >사진 속 문법 단위를 분석하고, 성조 발음 청취 및 단어 저장을 지원하는 개인화 학습 가이드입니다.
 
 🔗 [Hanyu-Lens 웹사이트 바로가기](https://hanyu-lens.vercel.app)
@@ -125,7 +125,7 @@
 
 ---
 
-## 🛠 기술적 도전 및 해결 (Technical Challenges)
+## 🔧 기술적 도전 및 해결 (Technical Challenges)
 
 이 프로젝트는 무료 인프라 환경에서 고성능 AI 모델을 안정적으로 서비스하기 위한 다양한 엔지니어링적 고민을 담고 있습니다.
 
@@ -226,8 +226,9 @@ graph LR
 
 ### **[Mascot]**
 * **Concept**: 판다가 돋보기로 중국어를 탐구하는 생동감 넘치는 캐릭터 디자인.
+<div align="center">
 <img src="./frontend/src/assets/panda01.png" width="200" alt="Hanyu-Lens Mascot">
-
+</div>
 ---
 
 ## 🏃 실행 방법 (Getting Started)
@@ -279,5 +280,4 @@ npm run dev
 5. Monitoring Interval: 5 minutes 설정
 6. [Create Monitor] 클릭
 ```
-> 📌 Hugging Face Spaces URL 형식: `https://suny0731-hanyu-lens-fallback.hf.space`
  
