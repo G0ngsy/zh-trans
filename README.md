@@ -118,19 +118,8 @@
 * **Networking & Security**
     * **Ngrok** 고정 도메인 터널링을 통해 로컬 서버를 보안 프로토콜(`HTTPS`)로 외부 배포 환경과 안정적으로 연결.
 
-```mermaid
-graph LR
-    UptimeRobot((UptimeRobot)) -- ping every 5min --> HF
-    User((User)) --> Vercel[Vercel Frontend]
-    Vercel --> LB{Traffic Control}
-    LB -- Primary --> Ngrok[Ngrok Tunnel]
-    Ngrok --> Local[Local GPU Server: PaddleOCR/EXAONE]
-    LB -- Fallback --> HF[Hugging Face Spaces: Light OCR/Translation]
- 
-    style Local fill:#f96,stroke:#333,stroke-width:2px
-    style HF fill:#69f,stroke:#333,stroke-width:2px
-    style UptimeRobot fill:#2ecc71,stroke:#333,stroke-width:2px
-```
+![아키텍처](frontend/src/assets/인프라%20아키텍처.png)
+
 > ***Architecture Flow:***
 > ___Client (Vercel) ↔️ Ngrok Tunnel ↔️ Local Server (Primary) / Hugging Face (Secondary, kept alive by UptimeRobot)___
 
