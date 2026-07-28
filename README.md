@@ -30,9 +30,102 @@
 * **지능형 문장 구조 파악:** 복잡한 문장 속에서도 핵심 단어와 문법 요소를 명확히 구분합니다.
 * **원어민 발음 동기화:** 텍스트 분석과 동시에 고품질 음성을 지원하여 시각과 청각을 동시에 자극합니다.
 
+
 ---
 
-## 🛠 기술적 도전 및 해결 (Technical Challenges)
+## 🚀 주요 기능 (Core Features)
+
+### **실시간 AR 번역 (Real-time AR Lens)**
+* **카메라 화면**에 글자를 비추는 즉시 병음과 성조를 자막 형태로 표시.
+* **자유로운 크롭 박스** 조절로 원하는 영역만 정밀 분석 가능.
+
+### **지능형 텍스트 분석 (Hybrid AI Analysis)**
+* **PaddleOCR**: 표, 성분표, 손글씨 등 복잡한 레이아웃 속 한자를 정밀하게 인식.
+* **EXAONE (LLM)**: 단순 번역이 아닌 문법적 단위(양사, 보어 등)를 쪼개어 단어장 형태로 풀이.
+
+### **원어민 발음 청취 (AI TTS System)**
+* **성별 선택 기능**: 여성(밝은 톤) 및 남성(차분한 저음) 목소리 선택 지원.
+* **인터랙티브 리딩**: 문장 전체 및 단어별 개별 청취 기능을 통한 쉐도잉 학습 지원
+* **Edge-TTS**: 마이크로소프트의 고품질 음성 합성 엔진을 활용한 자연스러운 발음 구현.
+
+### **나만의 단어장 (Smart Vocabulary)**
+* 분석된 단어를 **클릭 한 번**으로 `localStorage`에 저장 및 관리.
+* **회원가입 없이** 즉시 사용 가능한 개인화 학습 환경.
+
+### **설치형 웹 앱 (PWA)**
+* 별도의 스토어 방문 없이 홈 화면에 추가하여 진짜 앱처럼 편리하게 사용 가능합니다.
+
+---
+
+## ⚙️ 핵심 데이터 처리 로직 (Data Processing Pipeline)
+
+추출된 한자 데이터를 학습용 정보로 가공하기 위해 다음과 같은 자연어 처리(NLP) 과정을 거칩니다.
+
+| 단계 | 도구 (Library) | 역할 및 결과물 |
+| :--- | :--- | :--- |
+| **레이아웃 복원** | `Coordinate Logic` | OCR 좌표 데이터를 분석하여 원본의 줄바꿈 및 표 형식을 100% 복원 |
+| **병음 생성** | `pypinyin` | PaddleOCR이 읽어온 한자를 기반으로 **병음(Pinyin) + 성조** 자동 생성 |
+| **한국식 독음** | `hanja` | 한자 원문을 한국인 학습자에게 익숙한 **한국식 한자 독음**으로 변환 |
+| **형태소 분석** | `jieba` | 문장을 단어 단위로 정밀하게 쪼개어 **의미 단위 분석** 및 단어장 생성 |
+| **지능형 번역** | `Google Translator` | 쪼개진 단어들(`word_list`)과 전체 문장을 학습 맥락에 맞게 **한국어 번역** |
+| **데이터 정제** | `Regex (re)` | 한자가 포함되지 않은 숫자, 기호, 영문 단위를 필터링하여 단어장 무결성 확보 |
+
+
+---
+
+## 🛠 기술 스택 (Tech Stack)
+
+### **Frontend**
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
+
+### **Backend & AI**
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![PaddleOCR](https://img.shields.io/badge/PaddleOCR-2932E1?style=for-the-badge&logo=baidu&logoColor=white)
+![Ollama](https://img.shields.io/badge/Ollama-black?style=for-the-badge&logo=ollama&logoColor=white)
+
+### **세부 기술 리스트**
+
+| 구분 | 기술 / 라이브러리 |
+| :--- | :--- |
+| **Frontend** | React, TypeScript, Tailwind CSS, Vite, Framer Motion |
+| **Backend** | Python, FastAPI, Uvicorn, requests (API 통신) |
+| **OCR / AI** | PaddleOCR, EXAONE 3.5 (Ollama), Google Translator, Edge-TTS |
+| **NLP** | jieba (형태소 분석), hanja (한국식 독음), pypinyin |
+| **Infrastructure** | Vercel, Hugging Face Spaces (Fallback), Ngrok, **UptimeRobot** |
+
+---
+
+## 🛡️ 인프라 아키텍처 (Infrastructure Architecture)
+
+무거운 AI 모델의 연산 부하를 해결하고 서비스의 안정성을 확보하기 위해 **하이브리드 서버 구조** 구축.
+
+### **[Hybrid Server Architecture]**
+
+* **Main Server (Local GPU)**
+    * 개발자 로컬 PC의 **GPU 자원**을 직접 활용하여 고성능 AI 연산 수행.
+    * 주요 엔진: `PaddleOCR`, `EXAONE 3.5 (via Ollama)`
+* **Fallback Server (Cloud)**
+    * 메인 서버 장애 또는 로컬 PC 종료 시, **Hugging Face Spaces** 클라우드 서버로 자동 전환.
+    * **24시간 중단 없는** 기본적인 텍스트 분석 및 번역 서비스 보장.
+* **Sleep 방지 (UptimeRobot)**
+    * Hugging Face Spaces는 일정 시간 요청이 없으면 **슬립 모드**로 전환되어 첫 응답 시 수십 초 지연 발생.
+    * **UptimeRobot**이 5분 주기로 자동 ping을 전송하여 Fallback 서버를 **상시 활성 상태**로 유지.
+* **Networking & Security**
+    * **Ngrok** 고정 도메인 터널링을 통해 로컬 서버를 보안 프로토콜(`HTTPS`)로 외부 배포 환경과 안정적으로 연결.
+
+![아키텍처](frontend/src/assets/인프라%20아키텍처.png)
+
+> ***Architecture Flow:***
+> ___Client (Vercel) ↔️ Ngrok Tunnel ↔️ Local Server (Primary) / Hugging Face (Secondary, kept alive by UptimeRobot)___
+
+---
+
+## 🔧 기술적 도전 및 해결 (Technical Challenges)
 
 이 프로젝트는 무료 인프라 환경에서 고성능 AI 모델을 안정적으로 서비스하기 위한 다양한 엔지니어링적 고민을 담고 있습니다.
 
@@ -80,97 +173,6 @@ graph LR
 
 ---
 
-## 🚀 주요 기능 (Core Features)
-
-### **실시간 AR 번역 (Real-time AR Lens)**
-* **카메라 화면**에 글자를 비추는 즉시 병음과 성조를 자막 형태로 표시.
-* **자유로운 크롭 박스** 조절로 원하는 영역만 정밀 분석 가능.
-
-### **지능형 텍스트 분석 (Hybrid AI Analysis)**
-* **PaddleOCR**: 표, 성분표, 손글씨 등 복잡한 레이아웃 속 한자를 정밀하게 인식.
-* **EXAONE (LLM)**: 단순 번역이 아닌 문법적 단위(양사, 보어 등)를 쪼개어 단어장 형태로 풀이.
-
-### **원어민 발음 청취 (AI TTS System)**
-* **성별 선택 기능**: 여성(밝은 톤) 및 남성(차분한 저음) 목소리 선택 지원.
-* **인터랙티브 리딩**: 문장 전체 및 단어별 개별 청취 기능을 통한 쉐도잉 학습 지원
-* **Edge-TTS**: 마이크로소프트의 고품질 음성 합성 엔진을 활용한 자연스러운 발음 구현.
-
-### **나만의 단어장 (Smart Vocabulary)**
-* 분석된 단어를 **클릭 한 번**으로 `localStorage`에 저장 및 관리.
-* **회원가입 없이** 즉시 사용 가능한 개인화 학습 환경.
-
-### **설치형 웹 앱 (PWA)**
-* 별도의 스토어 방문 없이 홈 화면에 추가하여 진짜 앱처럼 편리하게 사용 가능합니다.
-
----
-
-## 🛠️ 기술 스택 (Tech Stack)
-
-### **Frontend**
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
-
-### **Backend & AI**
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![PaddleOCR](https://img.shields.io/badge/PaddleOCR-2932E1?style=for-the-badge&logo=baidu&logoColor=white)
-![Ollama](https://img.shields.io/badge/Ollama-black?style=for-the-badge&logo=ollama&logoColor=white)
-
-### **세부 기술 리스트**
-
-| 구분 | 기술 / 라이브러리 |
-| :--- | :--- |
-| **Frontend** | React, TypeScript, Tailwind CSS, Vite, Framer Motion |
-| **Backend** | Python, FastAPI, Uvicorn, requests (API 통신) |
-| **OCR / AI** | PaddleOCR, EXAONE 3.5 (Ollama), Google Translator, Edge-TTS |
-| **NLP** | jieba (형태소 분석), hanja (한국식 독음), pypinyin |
-| **Infrastructure** | Vercel, Hugging Face Spaces (Fallback), Ngrok, UptimeRobot |
-
----
-
-## 🛡️ 인프라 아키텍처 (Infrastructure Architecture)
-
-무거운 AI 모델의 연산 부하를 해결하고 서비스의 안정성을 확보하기 위해 **하이브리드 서버 구조** 구축.
-
-### **[Hybrid Server Architecture]**
-
-* **Main Server (Local GPU)**
-    * 개발자 로컬 PC의 **GPU 자원**을 직접 활용하여 고성능 AI 연산 수행.
-    * 주요 엔진: `PaddleOCR`, `EXAONE 3.5 (via Ollama)`
-* **Fallback Server (Cloud)**
-    * 메인 서버 장애 또는 로컬 PC 종료 시, **Hugging Face Spaces** 클라우드 서버로 자동 전환.
-    * **24시간 중단 없는** 기본적인 텍스트 분석 및 번역 서비스 보장.
-* **Sleep 방지 (UptimeRobot)**
-    * Hugging Face Spaces는 일정 시간 요청이 없으면 **슬립 모드**로 전환되어 첫 응답 시 수십 초 지연 발생.
-    * **UptimeRobot**이 5분 주기로 자동 ping을 전송하여 Fallback 서버를 **상시 활성 상태**로 유지.
-* **Networking & Security**
-    * **Ngrok** 고정 도메인 터널링을 통해 로컬 서버를 보안 프로토콜(`HTTPS`)로 외부 배포 환경과 안정적으로 연결.
-
-![아키텍처](frontend/src/assets/인프라%20아키텍처.png)
-
-> ***Architecture Flow:***
-> ___Client (Vercel) ↔️ Ngrok Tunnel ↔️ Local Server (Primary) / Hugging Face (Secondary, kept alive by UptimeRobot)___
-
----
-
-## ⚙️ 핵심 데이터 처리 로직 (Data Processing Pipeline)
-
-추출된 한자 데이터를 학습용 정보로 가공하기 위해 다음과 같은 자연어 처리(NLP) 과정을 거칩니다.
-
-| 단계 | 도구 (Library) | 역할 및 결과물 |
-| :--- | :--- | :--- |
-| **레이아웃 복원** | `Coordinate Logic` | OCR 좌표 데이터를 분석하여 원본의 줄바꿈 및 표 형식을 100% 복원 |
-| **병음 생성** | `pypinyin` | PaddleOCR이 읽어온 한자를 기반으로 **병음(Pinyin) + 성조** 자동 생성 |
-| **한국식 독음** | `hanja` | 한자 원문을 한국인 학습자에게 익숙한 **한국식 한자 독음**으로 변환 |
-| **형태소 분석** | `jieba` | 문장을 단어 단위로 정밀하게 쪼개어 **의미 단위 분석** 및 단어장 생성 |
-| **지능형 번역** | `Google Translator` | 쪼개진 단어들(`word_list`)과 전체 문장을 학습 맥락에 맞게 **한국어 번역** |
-| **데이터 정제** | `Regex (re)` | 한자가 포함되지 않은 숫자, 기호, 영문 단위를 필터링하여 단어장 무결성 확보 |
-
----
-
 ## 📸 주요 화면 미리보기
 
 <div align="center">
@@ -214,41 +216,68 @@ graph LR
 
 ---
 
+## 🐼 마스코트 & 디자인 (Mascot & Design)
+
+프로젝트의 시각적 정체성과 사용자 경험을 결정하는 디자인 요소입니다.
+
+### **[Design Concept]**
+* **Tone & Manner**: 깨끗하고 신뢰감 있는 학습 환경을 상징하는 **Jade (비취색)** 컬러를 메인 스택으로 사용.
+* **UI/UX**: 미니멀한 레이아웃에 **Framer Motion**을 결합하여 부드러운 인터랙션 제공.
+
+### **[Mascot]**
+* **Concept**: 판다가 돋보기로 중국어를 탐구하는 생동감 넘치는 캐릭터 디자인.
+<div align="center">
+<img src="./frontend/src/assets/panda01.png" width="200" alt="Hanyu-Lens Mascot">
+</div>
+---
+
 ## 🏃 실행 방법 (Getting Started)
 ### ⚙️ 사전 준비 (Prerequisites)
 * Python 3.10+ 및 Node.js 설치 필수
 * Ollama 설치 및 실행 (로컬 LLM 구동용)
-
 ### 1. Backend (Python)
 ```bash
+# 가상환경 활성화 후 라이브러리 설치
 cd backend
-
+ 
 # 가상환경 생성 및 활성화
 python -m venv venv
 source venv/Scripts/activate  # Windows (Git Bash)
 # source venv/bin/activate    # Mac/Linux
-
+ 
 # 필수 라이브러리 설치
 pip install -r requirements.txt
-
+ 
 # 로컬 AI 모델 다운로드 및 실행 (Ollama 필수)
 ollama run exaone3.5:7.8b
-
+ 
 # 백엔드 API 실행
 uvicorn main:app --reload --port 8000
-
+ 
 # 외부 노출을 위한 Ngrok 실행
 ngrok http --domain=your-domain.ngrok-free.dev 8000
 ```
-
+ 
 ### 2. Frontend (React)
 ```bash
 cd frontend
 npm install
-
+ 
 # .env 파일 생성 (프로젝트 루트 디렉토리)
+# VITE_API_URL=사용자_서버_주소 (예: http://localhost:8000)
 echo "VITE_API_URL=http://localhost:8000" > .env
-
+ 
 # 개발 서버 실행
 npm run dev
 ```
+ 
+### 3. UptimeRobot 설정 (Fallback 서버 슬립 방지)
+```
+1. https://uptimerobot.com 접속 후 무료 계정 생성
+2. [Add New Monitor] 클릭
+3. Monitor Type: HTTP(s) 선택
+4. URL: Hugging Face Spaces 엔드포인트 주소 입력
+5. Monitoring Interval: 5 minutes 설정
+6. [Create Monitor] 클릭
+```
+ 

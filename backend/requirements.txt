@@ -1,0 +1,19 @@
+# API server and multipart image uploads
+fastapi==0.135.1
+uvicorn==0.41.0
+python-multipart==0.0.22
+
+# OCR and image processing
+paddlepaddle==2.6.2
+paddleocr==2.8.1
+numpy==1.26.4
+opencv-python==4.11.0.86
+
+# Chinese/Korean language analysis and translation
+pypinyin==0.55.0
+hanja==0.15.1
+deep-translator==1.11.4
+
+# LLM and text-to-speech communication
+requests==2.32.5
+edge-tts==7.2.7

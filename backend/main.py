@@ -1,6 +1,7 @@
 import re
 import os
 import sys
+import logging
 
 # 윈도우 환경 안정성 설정
 os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
@@ -12,6 +13,7 @@ import json
 import hanja
 import base64
 from fastapi import FastAPI, UploadFile, File
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pypinyin import pinyin, Style
 from deep_translator import GoogleTranslator
@@ -26,6 +28,7 @@ import numpy as np
 
 
 app = FastAPI()
+logger = logging.getLogger(__name__)
 
 # 1. 모델 및 번역기 초기화
 #reader = easyocr.Reader(['ch_sim', 'en'], gpu=False)
@@ -76,7 +79,8 @@ def get_smart_word_list(text):
             "stream": False,
             "format": "json"
         }, timeout=60)
-        
+        response.raise_for_status()
+
         ai_data = json.loads(response.json()['response'])
         # 2. [필터링 핵심 코드] 한자가 하나라도 포함된 단어만 남기기
         filtered_list = []
@@ -87,7 +91,8 @@ def get_smart_word_list(text):
                 filtered_list.append(item)
         
         return filtered_list
-    except:
+    except Exception:
+        logger.exception("Ollama 단어 분석에 실패했습니다.")
         return []
 
 # 3. CORS 설정
@@ -270,7 +275,14 @@ async def analyze_text(data: dict):
     # 엑사원/번역기 로직 재사용
     hanja_read = hanja.translate(text, 'substitution')
     word_list = get_smart_word_list(text)
-    colloquial_result = google_translator.translate(text)
+    try:
+        colloquial_result = google_translator.translate(text)
+    except Exception as e:
+        logger.exception("텍스트 번역에 실패했습니다.")
+        return JSONResponse(
+            status_code=503,
+            content={"status": "error", "message": f"텍스트 분석 중 서버 오류가 발생했습니다: {str(e)}"},
+        )
     pinyin_str = " ".join([item[0] for item in pinyin(text, style=Style.TONE)])
 
     return {
