@@ -17,6 +17,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pypinyin import pinyin, Style
 from deep_translator import GoogleTranslator
+from realtime_ocr import analyze_realtime_image
 
 # PaddleOCR 임포트 전에 이 아래 세 줄을 추가하면 경로 문제를 방지할 수 있습니다.
 import paddleocr
@@ -232,35 +233,12 @@ async def analyze_image(file: UploadFile = File(...)):
 @app.post("/analyze_realtime")
 async def analyze_realtime(file: UploadFile = File(...)):
     try:
-        image_bytes = await file.read()
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-        # 1. OCR 실행
-        result = ocr_engine.ocr(img, cls=True)
-        
-        detected_data =[]
-        if result and result[0]:
-            for line in result[0]:
-                box = line[0]  # 좌표 4개 모서리 [[x1,y1], [x2,y2],[x3,y3], [x4,y4]]
-                text = line[1][0]
-                
-                # 병음 추출
-                pinyin_str = " ".join([item[0] for item in pinyin(text, style=Style.TONE)])
-                
-                # ✨ 핵심: 글자의 한가운데 좌표 계산
-                center_x = (box[0][0] + box[2][0]) / 2
-                center_y = (box[0][1] + box[2][1]) / 2
-                
-                detected_data.append({
-                    "text": text,
-                    "pinyin": pinyin_str,
-                    "x": center_x,
-                    "y": center_y
-                })
-        
-        # ✨ 핵심: 'results'라는 이름으로 배열을 보냄
-        return {"results": detected_data}
+        return await analyze_realtime_image(
+            file,
+            ocr_engine,
+            pinyin_separator=" ",
+            include_line_id=False,
+        )
     except Exception as e:
         print(f"실시간 에러: {e}")
         return {"results":[]}

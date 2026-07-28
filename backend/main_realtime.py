@@ -1,10 +1,8 @@
 import os
-import cv2
-import numpy as np
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from pypinyin import pinyin, Style
 from paddleocr import PaddleOCR
+from realtime_ocr import analyze_realtime_image
 
 # 윈도우/리눅스 에러 방지 설정
 os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
@@ -30,34 +28,11 @@ def read_root():
 @app.post("/analyze_realtime")
 async def analyze_realtime(file: UploadFile = File(...)):
     try:
-        image_bytes = await file.read()
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-        # 1. OCR 실행
-        result = ocr_engine.ocr(img, cls=True)
-        
-        # 2. 결과 구조화 (좌표 + 텍스트 + 병음)
-        detected_data = []
-        if result and result[0]:
-            for line_idx, line in enumerate(result[0]):
-                box = line[0]  # 좌표
-                text = line[1][0] # 텍스트
-                # 병음 추출
-                pinyin_str = "".join([item[0] for item in pinyin(text, style=Style.TONE)])
-                
-                # 좌표 중심 계산 (화면 중앙값용)
-                center_x = (box[0][0] + box[2][0]) / 2
-                center_y = (box[0][1] + box[2][1]) / 2
-                
-                detected_data.append({
-                    "text": text,
-                    "pinyin": pinyin_str,
-                    "x": center_x,
-                    "y": center_y,
-                    "line_id": line_idx
-                })
-        
-        return {"results": detected_data}
+        return await analyze_realtime_image(
+            file,
+            ocr_engine,
+            pinyin_separator="",
+            include_line_id=True,
+        )
     except Exception as e:
         return {"results": []}
