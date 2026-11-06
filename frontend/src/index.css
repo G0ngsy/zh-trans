@@ -171,7 +171,7 @@ button, input, textarea { -webkit-tap-highlight-color: transparent; }
 /* Compact home spacing; keep scrolling available for zoom and short screens. */
 .home-page .home-hero { min-height: 188px; padding-top: 16px; }
 .home-page .hero-description { margin-top: 8px; }
-.home-page .home-hero img { width: 120px; height: 136px; }
+.home-page .home-hero img { width: clamp(120px, 36vw, 150px); height: 136px; }
 .home-page .home-actions { padding-top: 4px; }
 .home-page .secondary-actions { margin: 8px 0 14px; }
 .home-page .text-analysis { padding: 14px; }
@@ -184,7 +184,7 @@ button, input, textarea { -webkit-tap-highlight-color: transparent; }
   .app-shell:has(.home-page) .header-inner { padding-block: 8px; }
   .home-page .home-hero { min-height: 138px; padding-top: 8px; }
   .home-page .home-hero h1 { font-size: 27px; }
-  .home-page .home-hero img { width: 100px; height: 110px; }
+  .home-page .home-hero img { width: 120px; height: 110px; }
   .home-page .hero-description { font-size: 12px; margin-top: 5px; }
   .home-page .ar-action { padding-block: 10px; }
   .home-page .secondary-actions { margin-bottom: 10px; }
