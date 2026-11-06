@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { UploadCloud, X } from 'lucide-react';
 
 interface ImageUploaderProps {
-  onImageSelect: (file: File) => void; // 부모에게 파일을 전달하는 함수
+  onImageSelect: (file: File | null) => void; // 부모에게 파일을 전달하는 함수
 }
 
 export default function ImageUploader({ onImageSelect }: ImageUploaderProps) {
@@ -31,24 +31,26 @@ export default function ImageUploader({ onImageSelect }: ImageUploaderProps) {
   const clearImage = (e: React.MouseEvent) => {
     e.stopPropagation(); // 부모 클릭 이벤트 방지
     setPreview(null);
+    onImageSelect(null);
     if (inputRef.current) inputRef.current.value = '';
   };
 
   return (
     <div className="flex-1 flex flex-col h-full min-h-[300px]">
       {preview ? (
-        <div className="relative flex-1 bg-gray-900 rounded-3xl overflow-hidden shadow-sm group">
+        <div className="relative flex-1 bg-gray-900 rounded-2xl overflow-hidden shadow-sm group">
           <img src={preview} alt="Preview" className="w-full h-full object-contain" />
-          <button 
+          <button
             onClick={clearImage}
+            aria-label="선택한 이미지 삭제"
             className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
           >
             <X size={20} />
           </button>
         </div>
       ) : (
-        <label 
-          className={`flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-3xl cursor-pointer transition-all duration-200
+        <label
+          className={`flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-200
             ${dragActive ? 'border-jade-400 bg-jade-50' : 'border-gray-200 bg-gray-50 hover:bg-jade-50/50 hover:border-jade-300'}`}
           onDragEnter={() => setDragActive(true)}
           onDragLeave={() => setDragActive(false)}

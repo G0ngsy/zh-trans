@@ -1,148 +1,42 @@
-import { useRef, useState } from 'react'; // useRef 추가
-import { CirclePause, CirclePlay, Trash2} from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Pause, Volume2, Trash2, Search, BookOpen, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
-
-interface VocabItem {
-  word: string;
-  meaning: string;
-  pinyin: string;
-}
-
-interface VocabPageProps {
-  onBack: () => void;
-}
-
-
+import { readVocabulary, matchesVocabulary } from '../vocabulary';
+interface VocabPageProps { onBack: () => void }
 export default function VocabPage({ onBack }: VocabPageProps) {
-  const [words, setWords] = useState<VocabItem[]>(
-    JSON.parse(localStorage.getItem('myVocab') || '[]')
-  );
-
-  // ✨ 1. 오디오 참조용 변수 추가
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [words, setWords] = useState(readVocabulary);
+  const [query, setQuery] = useState('');
   const [playingWord, setPlayingWord] = useState<string | null>(null);
-
-
-  // ✨ 2. 발음 재생 함수 (ResultCard와 동일하게 성별 인자 추가)
+  const [message, setMessage] = useState('');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
+  const stopAudio = () => { requestRef.current?.abort(); requestRef.current = null; audioRef.current?.pause(); audioRef.current = null; setPlayingWord(null); };
+  useEffect(() => () => { requestRef.current?.abort(); audioRef.current?.pause(); audioRef.current = null; }, []);
   const playAudio = async (text: string) => {
-    // 1. 중복 재생 방지 및 기존 오디오 초기화
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-
-    // 2. 현재 재생 중인 단어 상태 설정 (아이콘이 즉시 '정지'로 변함)
-    setPlayingWord(text);
-
-    const audio = new Audio();
-    audioRef.current = audio;
-
-    // 3. 재생이 자연스럽게 끝나면 아이콘을 다시 '재생'으로 복구
-    audio.onended = () => {
-    if (playingWord === text) setPlayingWord(null);
-     };  // 현재 재생 중인 단어가 이 오디오와 일치할 때만 상태 초기화
-
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    const fallbackApiUrl = 'https://suny0731-hanyu-lens-fallback.hf.space';
-
+    if (playingWord === text) { stopAudio(); return; }
+    stopAudio(); setMessage(''); setPlayingWord(text);
+    const audio = new Audio(); audioRef.current = audio;
+    const controller = new AbortController(); requestRef.current = controller;
+    audio.onended = () => { if (audioRef.current === audio) setPlayingWord(null); };
     try {
-      const res = await axios.post(`${apiUrl}/speak`, { text: text, gender: 'female' }, {
-        headers: { 'ngrok-skip-browser-warning': '69420' },
-        timeout: 1000
-      });
-
-      // ✨응답이 왔을 때, 사용자가 그 사이에 다른 단어를 눌렀는지 확인
-      if (audioRef.current !== audio) return; 
-
-      audio.src = `data:audio/mp3;base64,${res.data.audio}`;
-      await audio.play(); // 소리 재생 시작
-      
-    } catch {
-      try {
-        const fallbackRes = await axios.post(`${fallbackApiUrl}/speak`, { text: text, gender: 'female' });
-        if (audioRef.current !== audio) return; // [보완]
-
-        audio.src = `data:audio/mp3;base64,${fallbackRes.data.audio}`;
-        await audio.play();
-      } catch (e) {
-        setPlayingWord(null);
-        console.error("재생 실패:", e);
-      }
-    }
+      let response;
+      try { response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/speak`, { text, gender: 'female' }, { signal: controller.signal, timeout: 1000, headers: { 'ngrok-skip-browser-warning': '69420' } }); }
+      catch { if (controller.signal.aborted) return; response = await axios.post('https://suny0731-hanyu-lens-fallback.hf.space/speak', { text, gender: 'female' }, { signal: controller.signal, timeout: 10000 }); }
+      if (audioRef.current !== audio) return;
+      audio.src = `data:audio/mp3;base64,${response.data.audio}`; await audio.play();
+    } catch { if (!controller.signal.aborted && audioRef.current === audio) { setPlayingWord(null); setMessage('발음을 불러오지 못했어요. 잠시 후 다시 시도해주세요.'); } }
   };
-
-  const deleteWord = (index: number) => {
-    const updated = words.filter((_, i) => i !== index);
-    localStorage.setItem('myVocab', JSON.stringify(updated));
-    setWords(updated);
+  const remove = (index: number) => {
+    const next = words.filter((_, i) => i !== index);
+    try { localStorage.setItem('myVocab', JSON.stringify(next)); if (playingWord === words[index].word) stopAudio(); setWords(next); setMessage('단어를 삭제했어요.'); }
+    catch { setMessage('저장 공간에 접근하지 못했어요. 다시 시도해주세요.'); }
   };
-
-  return (
-    <div className="p-6 animate-fade-in max-w-4xl mx-auto">
-      <h2 className="text-2xl font-black text-gray-800 mb-6 text-center">나의 단어장</h2>
-      
-      {words.length === 0 ? (
-        <p className="text-gray-400 text-center mt-10">아직 저장한 단어가 없어요!</p>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {words.map((item, i) => (
-            <div key={i} className="bg-white p-4 rounded-2xl border border-jade-100 flex items-center shadow-sm hover:shadow-md transition-shadow">
-              
-             {/* 스피커/정지 통합 버튼 */}
-              <button 
-                onClick={() => {
-                  if (playingWord === item.word) {
-                    // 현재 재생 중인 단어를 다시 누르면 정지
-                    audioRef.current?.pause();
-                    setPlayingWord(null);
-                  } else {
-                    // 다른 단어 재생
-                    playAudio(item.word);
-                  }
-                }} 
-                className={`mr-4 transition-all p-1 rounded-full cursor-pointer
-                  ${playingWord === item.word ? 'text-gray-400 hover:text-gray-500' : 'text-jade-500 hover:text-jade-700'}`}
-              >
-                   {playingWord === item.word ? (<CirclePause size={24} /> ) : (<CirclePlay size={24} />)}
-              </button>
-
-              <div className="flex-1">
-                <p className="text-jade-600 font-bold text-lg">{item.word}</p>
-                <p className="text-sunset-400 font-bold text-xs font-mono mb-2">
-                    {item.pinyin}
-                  </p>
-                <p className="text-gray-600 text-sm">{item.meaning}</p>
-              </div>
-
-              {/* 삭제 버튼 */}
-              <button 
-                onClick={() => deleteWord(i)} 
-                className="text-crimson-600 hover:text-crimson-800 transition-all p-2 rounded-full hover:bg-crimson-50 cursor-pointer"
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-      
-      <div className="flex gap-3 mt-8">
-        {/* 1. 이전 화면으로 이동 (history.back) */}
-        <button 
-          onClick={() => window.history.back()}
-          className="flex-1 py-4 rounded-2xl font-bold transition-all bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200 active:scale-[0.98]"
-        >
-          이전으로
-        </button>
-
-        {/* 2. 홈으로 이동 (onBack 함수 실행) */}
-        <button 
-          onClick={onBack}
-          className="flex-1 py-4 rounded-2xl font-bold transition-all bg-jade-500 text-white shadow-lg shadow-jade-200 hover:bg-jade-600 active:scale-[0.98]"
-        >
-          홈으로
-        </button>
-      </div>
-    </div>
-  );
+  const filtered = words.map((item, index) => ({ item, index })).filter(({ item }) => matchesVocabulary(item, query));
+  return <section className="vocab-page page-width"><div className="page-title"><h1>나의 단어장 <span className="count-badge">총 {words.length}개</span></h1><BookOpen size={24} aria-hidden="true"/></div>
+    <label className="vocab-search"><Search size={23}/><span className="sr-only">단어, 병음, 한국어 뜻 검색</span><input type="search" placeholder="단어, 병음, 한국어 뜻 검색" value={query} onChange={e => setQuery(e.target.value)}/></label>
+    <p className="list-summary" aria-live="polite">{query ? `검색 결과 ${filtered.length}개` : '차곡차곡 모은 나의 중국어'}</p>
+    <p role="status" className="status-message">{message}</p>
+    {filtered.length ? <div className="vocab-grid">{filtered.map(({ item, index }) => <article className="paper-card vocab-card" key={`${item.word}-${index}`}><div className="vocab-card-body"><p className="pinyin">{item.pinyin}</p><h2 className="hanzi">{item.word}</h2><p className="word-meaning">{item.meaning}</p></div><div className="word-actions"><button className="icon-button listen-button" aria-label={`${item.word} ${playingWord === item.word ? '발음 정지' : '발음 듣기'}`} aria-pressed={playingWord === item.word} onClick={() => void playAudio(item.word)}>{playingWord === item.word ? <Pause size={22}/> : <Volume2 size={22}/>}</button><button className="icon-button delete-button" aria-label={`${item.word} 삭제`} onClick={() => remove(index)}><Trash2 size={21}/></button></div></article>)}</div> : <div className="paper-card empty-state"><BookOpen size={40}/><h2>{words.length ? '검색 결과가 없어요' : '아직 저장한 단어가 없어요'}</h2><p>{words.length ? '다른 한자, 병음 또는 한국어 뜻으로 찾아보세요.' : '중국어를 분석하고 마음에 드는 단어를 저장해보세요.'}</p>{words.length ? <button className="secondary-button" onClick={() => setQuery('')}>검색 초기화</button> : <button className="primary-button" onClick={onBack}><ArrowLeft size={18}/>중국어 발견하러 가기</button>}</div>}
+    {words.length > 0 && <p className="vocab-hint"><Volume2 size={17}/>스피커를 눌러 발음과 성조를 확인하세요.</p>}
+  </section>;
 }

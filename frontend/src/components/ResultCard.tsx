@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import { RefreshCcw, MessageCircle, Lightbulb, Book, Volume2, Plus,  CirclePause,CirclePlay} from 'lucide-react';
+import { RefreshCcw, Volume2, Plus, Check, Pause } from 'lucide-react';
+import { readVocabulary } from '../vocabulary';
 
 interface ResultCardProps {
   imageUrl: string | null;
@@ -10,7 +11,7 @@ interface ResultCardProps {
     literary: VocabItem[]; // 단어장 데이터
     colloquial: string;  // 구어체 번역
     hanja_read: string;  // 한국식 한자 독음
-    
+
   };
   onRetry: () => void;
 }
@@ -23,331 +24,53 @@ interface VocabItem {
 }
 
 export default function ResultCard({ imageUrl, result, onRetry }: ResultCardProps) {
+  const [savedWords, setSavedWords] = useState(() => new Set(readVocabulary().map(item => item.word)));
+  const [saveMessage, setSaveMessage] = useState('');
   const [gender, setGender] = useState<'female' | 'male'>('female');
   //  상태 추가
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [activeSegment, setActiveSegment] = useState<string | null>(null);  //  현재 재생 중인 segment의 인덱스나 내용을 저장할 상태
 
-  // ✨ 2. 컴포넌트가 화면에서 사라질 때(Unmount) 오디오 자동 정지
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        audioRef.current = null;
-      }
-    };
-  }, []);
-  
-
-
-// 오디오가 끝났을 때 자동으로 버튼 원래대로 돌리기 
-useEffect(() => {
-  const audio = audioRef.current;
-  if (!audio) return;
-
-  const handleEnded = () => setIsPlaying(false);
-  audio.addEventListener('ended', handleEnded);
-  
-  return () => audio.removeEventListener('ended', handleEnded);
-}, []);
-
-  // 단어 저장 함수
-  const saveToVocab = (word: string, meaning: string,pinyin: string) => {
-    // 저장된 데이터를 VocabItem 배열로 명확하게 가져옴
-    const saved: VocabItem[] = JSON.parse(localStorage.getItem('myVocab') || '[]');
-    
-    // 중복 저장 방지
-    if (!saved.find((item) => item.word === word)) {
-      const newVocab = [...saved, { word, meaning ,pinyin }];
-      localStorage.setItem('myVocab', JSON.stringify(newVocab));
-      alert('단어장에 저장되었습니다!');
-    } else {
-      alert('이미 저장된 단어입니다.');
-    }
-  };
-
-
-  const playAudio = async (text: string, voiceGender: 'female' | 'male') => {
-    // 1. 기존에 재생 중인 오디오가 있다면 멈춤
-    if (audioRef.current) {
-    audioRef.current.pause();
-    audioRef.current.currentTime = 0;
-  }
-
-  // 2. 새로운 오디오 객체 생성 및 및 ref 업데이트
-  const audio = new Audio();
-  audioRef.current = audio;
-
-  // ✨ 통합된 onended 핸들러, 종료 시 상태 초기화
-  audio.onended = () => {
-    setIsPlaying(false);
-    setActiveSegment(null); // 재생 끝나면 강조 해제
-  };
-
-  // 3. 재생 시작을 알리는 상태 설정
-  setActiveSegment(text);   // 재생 강조 시작
-
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    const fallbackApiUrl = 'https://suny0731-hanyu-lens-fallback.hf.space';
-
+  const requestRef = useRef<AbortController | null>(null);
+  useEffect(() => () => { requestRef.current?.abort(); audioRef.current?.pause(); audioRef.current = null; }, []);
+  const saveToVocab = (word: string, meaning: string, pinyin: string) => {
     try {
-      const res = await axios.post(`${apiUrl}/speak`, { 
-        text: text, 
-        gender: voiceGender 
-      }, {
-        headers: { 'ngrok-skip-browser-warning': '69420' },
-        timeout: 1000   //로컬 서버가 꺼져 있을 때 딱 1초만 기다리고 바로 다음 서버로 넘어감
-      });
-      console.log("서버가 보낸 데이터:", res.data);
-      // ✨서버 기다리는 동안 사용자가 다른 걸 클릭했는지 체크
-      if (audioRef.current !== audio) return;
-
-      audio.src = `data:audio/mp3;base64,${res.data.audio}`;
-      await audio.play();
-      setIsPlaying(true); 
-      
-    } catch {
-      try {
-        const fallbackRes = await axios.post(`${fallbackApiUrl}/speak`, { 
-          text: text, 
-          gender: voiceGender 
-        });
-        if (audioRef.current !== audio) return;
-
-        audio.src = `data:audio/mp3;base64,${fallbackRes.data.audio}`;
-        await audio.play();
-        setIsPlaying(true); 
-        
-      } catch (fallbackError) {
-        setIsPlaying(false);
-        console.error("단어 발음 재생 실패:", fallbackError);
-        alert("발음 재생에 실패했습니다.");
-      }
-    }
+      const saved = readVocabulary();
+      if (!saved.some(item => item.word === word)) localStorage.setItem('myVocab', JSON.stringify([...saved, { word, meaning, pinyin }]));
+      setSavedWords(new Set([...saved.map(item => item.word), word]));
+      setSaveMessage(`${word} 단어장에 저장했어요.`);
+    } catch { setSaveMessage('단어를 저장하지 못했어요. 저장 공간을 확인해주세요.'); }
   };
-
-  return (
-    <div className="flex flex-col  h-full animate-fade-in pb-10">
-      
-      {/* 1. 분석된 이미지 미리보기 */}
-      {imageUrl && (
-        <div className="w-full h-44 bg-gray-900 rounded-3xl overflow-hidden shadow-md mb-6 relative border-2 border-white">
-          <img src={imageUrl} alt="Uploaded" className="w-full h-full object-contain" />
-        </div>
-      )}
-
-      {/* 2. 섹션 타이틀 */}
-      <div className="flex items-center justify-between mb-3 px-1">
-        <h3 className="font-bold text-gray-800 text-lg">분석 결과</h3>
-        <span className="text-[10px] font-black text-jade-600 bg-jade-50 px-2 py-1 rounded-lg border border-jade-100 uppercase tracking-tighter">
-          Analysis Complete
-        </span>
-      </div>
-
-      {/* 3. 메인 분석 결과 카드 */}
-      <div className="bg-white border-2 border-jade-100 rounded-2xl md:rounded-[2.5rem] shadow-xl md:shadow-2xl mb-4 md:mb-6">
-        
-        {/* [A] 헤더: 원문 + 병음 */}
-        <div className="p-7 pb-6 bg-jade-50/30">
-          <h1 className="text-3xl font-black text-gray-900 mb-3 tracking-tight leading-tight break-all whitespace-pre-wrap">
-            {result.original}
-          </h1>
-
-          {/* 병음 & 스피커 */}
-          <div className="flex gap-2 mb-3 ">
-            <div className="flex items-center gap-2 ">
-           <button 
-              onClick={() => {
-                if (isPlaying) {
-                  // 1. 재생 중이면 정지
-                  if (audioRef.current) {
-                    audioRef.current.pause();
-                    audioRef.current.currentTime = 0;
-                  }
-                  setIsPlaying(false);
-                  setActiveSegment(null);
-                } else {
-                  // 2. 멈춰있으면 재생 시작
-                  playAudio(result.original, gender);
-                }
-              }} 
-              className={`transition-colors cursor-pointer ${isPlaying ? 'text-gray-400 hover:text-gray-500' : 'text-jade-500 hover:text-jade-700'}`}
-            >
-              {isPlaying ? <CirclePause size={24} /> : <CirclePlay size={24} />}
-            </button>
-
-          {/* [여성 버튼] */}
-          <button 
-            onClick={() => setGender('female')} 
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-              gender === 'female' 
-                ? 'bg-jade-500 text-white shadow-md hover:bg-jade-700' 
-                : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
-            }`}
-          >
-            여성
-          </button>
-
-          {/* [남성 버튼] */}
-          <button 
-            onClick={() => setGender('male')} 
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-              gender === 'male' 
-                ? 'bg-jade-500 text-white shadow-md hover:bg-jade-700' 
-                : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
-            }`}
-          >
-            남성
-          </button>
-        </div>
-      </div>
-
-        <p className="text-orange-500 font-bold text-lg font-mono  break-all whitespace-pre-wrap">
-          {result.pinyin.split('\n').map((line, lineIdx) => (
-            <div key={lineIdx} className="mb-2"> {/* 각 줄을 div로 감싸서 줄바꿈 강제 */}
-              {line.replace(/([。！？，；、,!?])\s*/g, '$1\n').split('\n').filter(Boolean).map((segment, segIdx) => (
-                <span
-                  key={segIdx}
-                  className={`cursor-pointer transition-all inline-block px-0.5 rounded
-                          ${activeSegment === segment.trim() 
-                            ? 'bg-sunset-50 text-sunset-400 shadow-xs' // 재생 중이면 강조
-                            : 'hover:bg-sunset-50 hover:rounded'  // 아니면 호버 효과
-                          }`}
-                  onClick={() => playAudio(segment.trim(), gender)} 
-                >
-                  {segment}{' '}
-                </span>
-              ))}
-            </div>
-          ))}</p>
-      </div>
-
-        {/* [B] 상세 분석 영역 */}
-        <div className="p-7 pt-0 space-y-8">
-          
-          {/* 구분선 */}
-          <div className="h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent"></div>
-
-          {/* 1. 한국식 한자 독음 */}
-          <div className="flex items-center gap-3">
-            <div className="shrink-0 flex items-center gap-1.5 text-[10px] font-black text-jade-600/50 uppercase tracking-tighter">
-              
-              <span>한국식 독음</span>
-            </div>
-            <span className="px-3 py-1 bg-jade-100 text-jade-700 text-sm font-black rounded-xl border border-jade-200 shadow-sm">
-              {result.hanja_read}
-            </span>
-          </div>
-
-          {/* 2. 핵심 단어장 (Vocabulary) */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-jade-50 rounded-xl flex items-center justify-center text-jade-500 border border-jade-100">
-                <Book size={20} />
-              </div>
-              <div>
-                <span className="text-[11px] font-black text-jade-600 uppercase tracking-widest opacity-70 leading-none">WORD LIST</span>
-                <h4 className="text-sm font-bold text-gray-700">단어 뜻 풀이</h4>
-              </div>
-            </div>
-
-            {/* 단어 카드 그리드 (글자가 길어질 것을 대비해 grid-cols-2 기본 적용) */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[300px] overflow-y-auto p-1 pr-2 scrollbar-thin">
-               {/* result.literary 뒤에 ?를 붙여서 데이터가 없을 때 에러 방지 */}
-              {Array.isArray(result.literary) && result.literary
-                // 1단계 필터: 한자가 하나라도 포함된 단어만 통과
-                ?.filter(item => /[\u4e00-\u9fff]/.test(item.word || '')) 
-                // 2단계 렌더링
-                .map((item, i) => (
-                <div 
-                    key={i} 
-                    onContextMenu={(e) => { e.preventDefault(); saveToVocab(item.word, item.meaning,item.pinyin); }} 
-                    className="relative bg-gray-50/50 border border-gray-100 rounded-2xl p-3.5 transition-all hover:border-jade-300 hover:bg-white hover:shadow-md group cursor-pointer"
-                  >
-                    
-                  {/* 1. 한자 */}
-                  <p className="text-jade-600 font-black text-xl mb-0.5 group-hover:scale-105 transition-transform origin-left">
-                    {item.word}
-                  </p>
-
-                  <div className="absolute top-2 right-2 flex flex-col gap-1">
-                    
-                    
-                    {/* 저장 버튼 (+) */}
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); saveToVocab(item.word, item.meaning,item.pinyin); }}
-                      className="p-1.5 text-sunset-300 hover:text-sunset-400 rounded-full hover:bg-sunset-50 cursor-pointer"
-                    >
-                      <Plus size={16} /> 
-                    </button>
-
-                    {/* 듣기 버튼 */}
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); playAudio(item.word, gender); }}
-                      className="p-1.5 text-jade-400 hover:text-jade-600 rounded-full hover:bg-jade-50 cursor-pointer"
-                    >
-                      <Volume2 size={16} />
-                    </button>
-                  </div>
-
-                  {/* 2. 병음 (성조 포함) */}
-                  <p className="text-sunset-400 font-bold text-xs font-mono mb-2">
-                    {item.pinyin}
-                  </p>
-
-                  {/* 3. 뜻 */}
-                  <p className="text-gray-600 text-xs font-bold truncate border-t border-gray-50 pt-2">
-                    {item.meaning}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="h-px bg-gray-100 w-full"></div>
-
-          {/* 3. 구어체 (Colloquial) */}
-          <div className="flex gap-4 pb-4">
-            <div className="shrink-0 w-10 h-10 bg-jade-50 rounded-xl flex items-center justify-center text-jade-500 border border-jade-100">
-              <MessageCircle size={20} />
-            </div>
-            <div className="space-y-1">
-              <span className="text-[11px] font-black text-jade-600 uppercase tracking-widest opacity-70">FULL TEXT</span>
-              <h4 className="text-sm font-bold text-gray-700">전체 문장 해석</h4>
-              <p className="text-xl font-bold text-gray-700 italic leading-snug break-keep ">
-                "{result.colloquial}"
-              </p>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* 4. 학습 팁 박스 */}
-      <div className="bg-orange-50/80 border border-orange-100 rounded-3xl p-5 mb-8 flex gap-4 items-center">
-        <div className="shrink-0 bg-white p-2 rounded-2xl shadow-sm text-orange-400">
-          <Lightbulb size={24} />
-        </div>
-        <div className="space-y-1">
-          <p className="text-sm text-orange-800 font-bold leading-none">한어 렌즈 가이드</p>
-          <p className="text-[11px] text-orange-700/80 leading-relaxed font-medium">
-            개별 단어의 뜻이 궁금할 땐 <b>단어 뜻 풀이</b>를,<br/>
-      문장의 전체적인 흐름은 <b>전체 문장 해석</b>을 참고하세요!
-          </p>
-        </div>
-      </div>
-
-      {/* 5. 하단 버튼 */}
-      <button 
-        onClick={onRetry}
-        className="w-full py-5 bg-jade-500 hover:bg-jade-600 text-white rounded-2xl font-bold shadow-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-      >
-        <RefreshCcw size={18} />
-        <span>다른 이미지 분석하기</span>
-      </button>
-      
-    </div>
-  );
+  const playAudio = async (text: string, voiceGender: 'female' | 'male') => {
+    requestRef.current?.abort(); audioRef.current?.pause();
+    const audio = new Audio(); audioRef.current = audio;
+    const controller = new AbortController(); requestRef.current = controller;
+    setActiveSegment(text); setIsPlaying(false);
+    audio.onended = () => { if (audioRef.current === audio) { setIsPlaying(false); setActiveSegment(null); } };
+    try {
+      let response;
+      try { response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/speak`, { text, gender: voiceGender }, { signal: controller.signal, timeout: 1000, headers: { 'ngrok-skip-browser-warning': '69420' } }); }
+      catch { if (controller.signal.aborted) return; response = await axios.post('https://suny0731-hanyu-lens-fallback.hf.space/speak', { text, gender: voiceGender }, { signal: controller.signal, timeout: 10000 }); }
+      if (audioRef.current !== audio) return;
+      audio.src = `data:audio/mp3;base64,${response.data.audio}`; await audio.play();
+      if (audioRef.current === audio) setIsPlaying(true);
+    } catch { if (!controller.signal.aborted && audioRef.current === audio) { setIsPlaying(false); setActiveSegment(null); setSaveMessage('발음을 불러오지 못했어요. 잠시 후 다시 시도해주세요.'); } }
+  };
+    const stop = () => { requestRef.current?.abort(); audioRef.current?.pause(); audioRef.current = null; setIsPlaying(false); setActiveSegment(null); };
+  return <section className="result-content">
+    <div className="page-title"><h1>분석 결과</h1><span className="count-badge">분석 완료</span></div>
+    {imageUrl && <div className="result-image"><img src={imageUrl} alt="분석한 이미지"/></div>}
+    <article className="paper-card sentence-card">
+      <p className="eyebrow">발견한 문장</p><h2 className="hanzi original-text">{result.original}</h2>
+      <div className="sentence-pinyin">{result.pinyin.split('\n').map((line, i) => <p key={i}>{line.replace(/([。！？，；、,!?])\s*/g, '$1\n').split('\n').filter(Boolean).map((segment, j) => <button key={j} className={activeSegment === segment.trim() ? 'segment active' : 'segment'} onClick={() => void playAudio(segment.trim(), gender)} aria-label={`${segment} 발음 듣기`}>{segment}</button>)}</p>)}</div>
+      <p className="translation">{result.colloquial}</p>
+      <div className="voice-controls"><button className="primary-button" onClick={() => activeSegment ? stop() : void playAudio(result.original, gender)}>{isPlaying || activeSegment ? <Pause size={19}/> : <Volume2 size={19}/>} {activeSegment ? '재생 정지' : '문장 듣기'}</button><div className="voice-options" role="group" aria-label="발음 목소리">{(['female','male'] as const).map(value => <button key={value} aria-pressed={gender === value} onClick={() => setGender(value)}>{value === 'female' ? '여성' : '남성'}</button>)}</div></div>
+      {result.hanja_read && <p className="hanja-reading"><span>한국식 독음</span> {result.hanja_read}</p>}
+    </article>
+    <div className="word-section-heading"><h2>단어 뜻 풀이</h2><span>마음에 드는 단어를 모아보세요</span></div><p className="status-message" role="status">{saveMessage}</p>
+    <div className="result-words">{Array.isArray(result.literary) && result.literary.filter(item => /[\u4e00-\u9fff]/.test(item.word || '')).map((item, i) => <article className="paper-card result-word" key={`${item.word}-${i}`}><div><p className="pinyin">{item.pinyin}</p><h3 className="hanzi">{item.word}</h3><p className="word-meaning">{item.meaning}</p></div><div className="word-actions"><button className="icon-button listen-button" onClick={() => void playAudio(item.word, gender)} aria-label={`${item.word} 발음 듣기`}><Volume2 size={21}/></button><button className="icon-button save-button" onClick={() => saveToVocab(item.word, item.meaning, item.pinyin)} aria-label={`${item.word} ${savedWords.has(item.word) ? '저장됨' : '저장'}`} aria-pressed={savedWords.has(item.word)} disabled={savedWords.has(item.word)}>{savedWords.has(item.word) ? <Check size={21}/> : <Plus size={21}/>}</button></div></article>)}</div>
+    <aside className="learning-note">단어의 뜻과 문장 전체의 의미를 함께 살펴보세요. 듣기 버튼으로 성조를 익히고, + 버튼으로 단어를 저장할 수 있어요.</aside>
+    <button className="primary-button retry-button" onClick={onRetry}><RefreshCcw size={18}/>다른 중국어 분석하기</button>
+  </section>;
 }

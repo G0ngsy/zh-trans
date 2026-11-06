@@ -11,8 +11,8 @@ export default defineConfig({
   manifest: {
     name: 'Hanyu Lens',
     short_name: 'HanyuLens',
-    theme_color: '#34D399',
-    background_color: '#ECFDF5',
+    theme_color: '#1E824C',
+    background_color: '#FAF8F5',
     display: 'standalone', // 앱처럼 보이게 하는 핵심!
     icons: [
       {

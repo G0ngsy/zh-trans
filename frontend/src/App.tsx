@@ -2,9 +2,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ArrowLeft } from 'lucide-react';
-import { AnimatePresence } from 'framer-motion'; 
+import { AnimatePresence } from 'framer-motion';
 import pandaLoadingImg from './assets/panda01.png';
 import Header from './components/Header';
+import BottomNav from './components/BottomNav';
 import HeroText from './components/HeroText';
 import ActionButtons from './components/ActionButtons';
 import CameraCapture from './components/CameraCapture';
@@ -31,7 +32,7 @@ interface AnalysisResult {
   pinyin: string;
   hanja_read: string;
   literary: VocabItem[]; // ✨ 위에서 정의한 VocabItem 배열로 연결
-  colloquial: string; 
+  colloquial: string;
 }
 
 function App() {
@@ -40,7 +41,7 @@ function App() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
-  
+
   // --- 0. 시작 화면 제어 로직 ---
   useEffect(() => {
      // 2.5초 뒤에 시작 화면을 닫음
@@ -61,9 +62,7 @@ function App() {
   const goHome = () => {
     window.history.pushState({ view: 'HOME' }, '', ''); // 홈 기록 추가
     setView('HOME');
-    setSelectedFile(null);
-    setResult(null);
-    setPreviewUrl(null);
+    // Keep the last result available when returning with browser Back.
     // 홈으로 올 때는 기록을 새로 깨끗하게 정리할 수도 있습니다.
   };
 
@@ -91,14 +90,14 @@ function App() {
 
   // 2. [핵심] 이중 서버 연결 함수 (메인 PC 서버 -> 실패 시 허깅페이스 비상 서버)
   const analyzeImage = async (file: File) => {
-    setView('LOADING'); 
+    setView('LOADING');
 
     const formData = new FormData();
     formData.append('file', file);
 
     // 환경 변수(메인)와 비상용 허깅페이스 주소
     const mainApi = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    const fallbackApi = 'https://suny0731-hanyu-lens-fallback.hf.space'; 
+    const fallbackApi = 'https://suny0731-hanyu-lens-fallback.hf.space';
 
     try {
       // 1순위: 내 PC 서버 시도
@@ -106,7 +105,7 @@ function App() {
         headers: { 'Content-Type': 'multipart/form-data', 'ngrok-skip-browser-warning': '69420' },
         timeout: 40000 // 40초 대기
       });
-      setResult(response.data); 
+      setResult(response.data);
       navigateTo('RESULT');
     } catch (_error) {
       console.warn("메인 서버 실패, 비상 서버로 전환합니다.");
@@ -125,10 +124,12 @@ function App() {
 
   // 텍스트 분석 로직 추가 (이미지 없이 텍스트만 보내기)
 const analyzeText = async (text: string) => {
+  setPreviewUrl(null);
+  setSelectedFile(null);
   setView('LOADING');
-  
+
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    
+
     // 텍스트 분석용 새로운 API 엔드포인트 호출 (/analyze_text)
     const fallbackApiUrl = 'https://suny0731-hanyu-lens-fallback.hf.space'; // 허깅페이스 주소
 
@@ -141,7 +142,7 @@ const analyzeText = async (text: string) => {
 
       setResult(response.data);
       navigateTo('RESULT');
-      
+
     } catch (_error) {
       console.warn("메인 서버 실패, 비상 서버로 텍스트 분석 전환합니다.");
       try {
@@ -157,9 +158,9 @@ const analyzeText = async (text: string) => {
   };
 
   // 3. [업로드 모드] 파일 선택 핸들러
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = (file: File | null) => {
     setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    setPreviewUrl(file ? URL.createObjectURL(file) : null);
   };
 
   // 4. [업로드 모드] '분석하기' 버튼 클릭 시 실행
@@ -172,12 +173,12 @@ const analyzeText = async (text: string) => {
   // 5. [카메라 모드] 촬영 완료 시 실행
   const handleCameraCapture = (file: File, croppedUrl: string) => {
     setSelectedFile(file);
-    setPreviewUrl(croppedUrl); 
-    analyzeImage(file); 
+    setPreviewUrl(croppedUrl);
+    analyzeImage(file);
   };
 
   return (
-    <div className="min-h-screen bg-jade-50">
+    <div className="app-shell">
       {/* 시작 화면이 true일 때만 보여줌 */}
       <AnimatePresence>
         {showSplash && <SplashScreen key="splash" />}
@@ -186,17 +187,16 @@ const analyzeText = async (text: string) => {
       {!showSplash && (
         <div className="animate-fade-in">
           {/* 헤더에 goHome 함수 연결 */}
-          <Header onLogoClick={goHome}
-                  onVocabClick={() => navigateTo('VOCAB')} /> 
+          {view !== 'REALTIME' && view !== 'CAMERA' && <Header onLogoClick={goHome} />}
 
-          <main className="flex-1 pb-20">
+          <main className={['HOME', 'VOCAB', 'RESULT'].includes(view) ? 'with-bottom-nav' : 'utility-main'}>
             {/* === CASE 1: 홈 화면 === */}
             {view === 'HOME' && (
-              <div className="animate-fade-in pt-12">
+              <div className="home-page page-width animate-fade-in">
                 <HeroText />
-                <div className="mt-8">
+                <div>
                   {/* ActionButtons에 새로 추가된 속성들을 연결해줍니다 */}
-                  <ActionButtons 
+                  <ActionButtons
                     onCameraClick={() => navigateTo('CAMERA')}
                     onUploadClick={() => navigateTo('UPLOAD')}
                     onRealtimeClick={() => navigateTo('REALTIME')}
@@ -217,8 +217,8 @@ const analyzeText = async (text: string) => {
             {/* 뒤로가기 버튼 (UPLOAD 모드에서만 표시) */}
             {(view === 'UPLOAD' ) && (
               <div className="max-w-2xl mx-auto px-6 mt-4 mb-2">
-                <button 
-                  onClick={goHome} 
+                <button
+                  onClick={goHome}
                   className="flex items-center text-gray-500 hover:text-jade-600 font-bold transition-colors cursor-pointer"
                 >
                   <ArrowLeft size={20} className="mr-1"/> 처음으로
@@ -228,9 +228,9 @@ const analyzeText = async (text: string) => {
 
             {/* === CASE 2: 기능 화면들 === */}
             {view === 'CAMERA' && (
-              <CameraCapture 
-                onCapture={handleCameraCapture} 
-                onClose={goHome}                
+              <CameraCapture
+                onCapture={handleCameraCapture}
+                onClose={goHome}
               />
             )}
 
@@ -238,37 +238,37 @@ const analyzeText = async (text: string) => {
               <div className="max-w-md mx-auto px-4 animate-slide-up mt-8">
                 <h2 className="text-xl font-bold text-center mb-6 text-gray-800">이미지 업로드</h2>
                 <ImageUploader onImageSelect={handleFileSelect} />
-                
+
                 <div className="mt-6">
-                  <button 
+                  <button
                     onClick={handleUploadAnalyze}
                     disabled={!selectedFile}
                     className={`w-full py-4 rounded-2xl font-bold text-white shadow-md transition-all ${
-                      selectedFile 
-                        ? 'bg-jade-600 hover:bg-jade-700' 
+                      selectedFile
+                        ? 'bg-jade-600 hover:bg-jade-700'
                         : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     }`}
                   >
-                    {selectedFile ? '분석 시작하기' : '이미지를 선택해주세요'}
+                    {selectedFile ? '이 이미지 분석하기' : '이미지를 선택해주세요'}
                   </button>
                 </div>
               </div>
             )}
 
             {view === 'LOADING' && (
-              <div className="flex flex-col items-center justify-center pt-24 animate-fade-in">
+              <div className="loading-page flex flex-col items-center justify-center animate-fade-in">
                 {/* 1. 판다 이미지를 상단에 배치 */}
                 <div className="relative mb-10">
                   <div className="w-48 h-48 bg-white/50 rounded-full flex items-center justify-center backdrop-blur-sm shadow-xl shadow-jade-100 border-2 border-jade-100/50 relative overflow-hidden">
-                    <img 
+                    <img
                       src={pandaLoadingImg} // 변수 이름을 그대로 넣습니다.
-                      width="160" 
-                      height="160" 
-                      alt="panda-loading" 
+                      width="160"
+                      height="160"
+                      alt="panda-loading"
                       className="object-contain"
                     />
                   </div>
-                  
+
                   {/* 2. 판다 주변을 빙글빙글 도는 로딩 스피너 */}
                   {/* 그라데이션 스피너 구현 (border 대신 svg 활용) */}
                   <div className="absolute -inset-6 animate-spin opacity-60">
@@ -277,13 +277,13 @@ const analyzeText = async (text: string) => {
                           <stop offset="0%" stopColor="#34D399" stopOpacity="1" /> {/* jade-400 */}
                           <stop offset="100%" stopColor="#34D399" stopOpacity="0" /> {/* 투명하게 사라짐 */}
                         </linearGradient></defs>
-                      <circle 
-                        cx="50" cy="50" r="46" 
-                        stroke="url(#spinner-grad)" 
-                        strokeWidth="4" 
-                        fill="none" 
+                      <circle
+                        cx="50" cy="50" r="46"
+                        stroke="url(#spinner-grad)"
+                        strokeWidth="4"
+                        fill="none"
                         strokeLinecap="round"
-                        strokeDasharray="200" 
+                        strokeDasharray="200"
                       />
                     </svg>
                   </div>
@@ -291,8 +291,8 @@ const analyzeText = async (text: string) => {
 
                 {/* 3. 텍스트 정보 */}
                 <div className="text-center space-y-2">
-                  <h3 className="text-2xl font-black text-gray-800 tracking-tight">AI 분석 중...</h3>
-                  <p className="text-gray-500 font-medium">판다가 한자를 열심히 읽고 있어요!</p>
+                  <h3 className="text-2xl font-black text-gray-800 tracking-tight">중국어를 살펴보고 있어요</h3>
+                  <p className="text-gray-500 font-medium">병음과 뜻을 차근차근 정리하고 있어요.</p>
                 </div>
 
               </div>
@@ -300,16 +300,17 @@ const analyzeText = async (text: string) => {
 
             {/* 결과창: 여기서 단어장 갔다가 뒤로오면 다시 여기가 보임! */}
             {view === 'RESULT' && result && (
-              <div className="max-w-4xl mx-auto px-4 animate-fade-in pt-4">
-                <ResultCard 
+              <div className="result-page page-width animate-fade-in">
+                <ResultCard
                   imageUrl={previewUrl}
                   result={result}
                   onRetry={goHome}
-                  
+
                 />
               </div>
             )}
           </main>
+          {(view === 'HOME' || view === 'VOCAB' || view === 'RESULT') && <BottomNav active={view} onHome={goHome} onScan={() => navigateTo('REALTIME')} onVocab={() => navigateTo('VOCAB')} />}
         </div>
       )}
     </div>
