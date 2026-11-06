@@ -1,4 +1,4 @@
-import logo from '../assets/hanyu-wordmark.png';
+import logo from '../assets/hanyu-wordmark-matched.png';
 interface HeaderProps { onLogoClick: () => void }
 export default function Header({ onLogoClick }: HeaderProps) {
   return <header className="site-header"><div className="header-inner">
