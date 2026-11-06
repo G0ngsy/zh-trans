@@ -17,7 +17,7 @@ export default function ActionButtons({ onCameraClick, onUploadClick, onRealtime
       {/* 1. 텍스트 직접 입력창 (통합 검색창 스타일) */}
       <div className="w-full bg-white border-2 border-jade-100 rounded-3xl shadow-sm mb-6 overflow-hidden focus-within:border-jade-400 transition-all">
         <textarea 
-          placeholder="중국어를 직접 입력하거나 붙여넣으세요..." 
+          placeholder="중국어를 입력하세요"
           className="w-full p-5 outline-none text-gray-800 text-sm h-24 resize-none"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
