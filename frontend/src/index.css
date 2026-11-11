@@ -70,7 +70,6 @@ button, input, textarea { -webkit-tap-highlight-color: transparent; }
 .home-hero { padding-top: 30px; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 240px; }
 .eyebrow { color: var(--primary); font-size: 11px; font-weight: 700; letter-spacing: .12em; margin: 0 0 10px; }
 .home-hero h1 { font-size: clamp(27px, 6.8vw, 40px); font-weight: 800; letter-spacing: -.06em; line-height: 1.4; margin: 0; }
-.hero-description { color: var(--muted); font-size: 13px; line-height: 1.7; margin-top: 14px; }
 .home-hero img { width: 140px; height: 160px; object-fit: contain; flex-shrink: 0; }
 .home-actions { padding-top: 12px; }
 .ar-action { width: 100%; display: flex; align-items: center; gap: 12px; background: #1e824c; color: white; padding: 14px 16px; border-radius: var(--control-radius); text-align: left; box-shadow: 0 3px 8px #00673812; }
@@ -87,11 +86,9 @@ button, input, textarea { -webkit-tap-highlight-color: transparent; }
 .section-label h2 { font-size: 15px; font-weight: 750; display: flex; align-items: center; gap: 6px; }
 .section-label h2 svg { color: var(--primary); flex-shrink: 0; }
 .section-label > span { font-size: 10px; color: var(--muted); white-space: nowrap; }
-.text-analysis textarea { width: 100%; min-height: 88px; padding: 13px; border-radius: 12px; background: var(--secondary-surface); resize: vertical; border: 1px solid transparent; font-size: 14px; line-height: 1.7; }
+.text-analysis textarea { width: 100%; height: 88px; min-height: 88px; padding: 13px; border-radius: 12px; background: var(--secondary-surface); resize: none; overflow-y: auto; overscroll-behavior-y: contain; border: 1px solid transparent; font-size: 14px; line-height: 1.7; }
 .text-analysis textarea::placeholder { color: #697168; }
-.input-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-.suggestions { display: flex; gap: 4px; align-items: center; font-size: 11px; color: var(--muted); }
-.suggestions button { min-height: 44px; padding: 0 4px; color: #2c3531; }
+.input-footer { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
 .primary-button, .secondary-button { display: inline-flex; gap: 8px; align-items: center; justify-content: center; min-height: 44px; padding: 10px 16px; border-radius: var(--control-radius); background: var(--primary); color: white; font-size: 14px; font-weight: 700; }
 .primary-button:hover:not(:disabled) { background: #00542d; }
 .primary-button:disabled { background: #e5e7e2; color: #687267; }
@@ -170,13 +167,12 @@ button, input, textarea { -webkit-tap-highlight-color: transparent; }
 
 /* Compact home spacing; keep scrolling available for zoom and short screens. */
 .home-page .home-hero { min-height: 188px; padding-top: 16px; }
-.home-page .hero-description { margin-top: 8px; }
 .home-page .home-hero img { width: clamp(120px, 36vw, 150px); height: 136px; }
 .home-page .home-actions { padding-top: 4px; }
 .home-page .secondary-actions { margin: 8px 0 14px; }
 .home-page .text-analysis { padding: 14px; }
 .home-page .section-label { margin-bottom: 10px; }
-.home-page .text-analysis textarea { min-height: 70px; }
+.home-page .text-analysis textarea { height: 70px; min-height: 70px; }
 .home-page .input-footer { margin-top: 6px; }
 .home-page .home-note { padding-top: 14px; }
 .with-bottom-nav:has(.home-page) { padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
@@ -185,14 +181,12 @@ button, input, textarea { -webkit-tap-highlight-color: transparent; }
   .home-page .home-hero { min-height: 138px; padding-top: 8px; }
   .home-page .home-hero h1 { font-size: 27px; }
   .home-page .home-hero img { width: 120px; height: 110px; }
-  .home-page .hero-description { font-size: 12px; margin-top: 5px; }
   .home-page .ar-action { padding-block: 10px; }
   .home-page .secondary-actions { margin-bottom: 10px; }
   .home-page .secondary-actions button { min-height: 44px; }
   .home-page .text-analysis { padding: 12px; }
-  .home-page .text-analysis textarea { min-height: 56px; }
+  .home-page .text-analysis textarea { height: 56px; min-height: 56px; }
   .home-page .home-note { padding-top: 8px; font-size: 11px; }
 }
 
 .home-page .home-hero { flex-wrap: wrap; column-gap: 8px; row-gap: 0; }
-.home-page .hero-description { flex: 0 0 100%; white-space: nowrap; font-size: clamp(10px, 2.8vw, 13px); margin-top: 0; padding-bottom: 8px; }
